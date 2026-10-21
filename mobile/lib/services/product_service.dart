@@ -45,4 +45,23 @@ class ProductService {
     final List<dynamic> data = jsonDecode(response.body);
     return data.map((e) => Product.fromJson(e)).toList();
   }
+
+  // Admin: PUT ca san pham (dung de doi categoryId, null = khong co danh muc).
+  Future<void> updateProduct(Product product) async {
+    final response = await http.put(
+      Uri.parse('${ConfigUrl.products}/${product.id}'),
+      headers: await _headers(),
+      body: jsonEncode(product.toJson()),
+    );
+    if (response.statusCode == 401) {
+      throw ApiException(401, 'Phiên đăng nhập hết hạn');
+    }
+    if (response.statusCode == 403) {
+      throw ApiException(403, 'Không có quyền');
+    }
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw ApiException(
+          response.statusCode, 'Lỗi sửa sản phẩm: ${response.statusCode}');
+    }
+  }
 }
