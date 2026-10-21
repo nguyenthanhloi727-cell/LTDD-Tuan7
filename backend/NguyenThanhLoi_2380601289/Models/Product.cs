@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace NguyenThanhLoi_2380601289.Models
 {
@@ -16,5 +17,11 @@ namespace NguyenThanhLoi_2380601289.Models
         public string? Description { get; set; }
 
         public string? ImageUrl { get; set; }
+
+        // Cho phep NULL: san pham chua phan loai, hoac danh muc da bi xoa.
+        public int? CategoryId { get; set; }
+
+        [JsonIgnore]
+        public Category? Category { get; set; }
     }
 }

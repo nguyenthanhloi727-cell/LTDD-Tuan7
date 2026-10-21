@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,18 +19,33 @@ namespace NguyenThanhLoi_2380601289.Controllers
             _context = context;
         }
 
+        // Product -> ProductDto (EF dich thanh LEFT JOIN, khong co danh muc thi CategoryName = null).
+        private static readonly Expression<Func<Product, ProductDto>> ToDto = p => new ProductDto
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Price = p.Price,
+            Description = p.Description,
+            ImageUrl = p.ImageUrl,
+            CategoryId = p.CategoryId,
+            CategoryName = p.Category != null ? p.Category.Name : null
+        };
+
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.Products.Select(ToDto).ToListAsync();
         }
 
         // GET: api/Products/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<ProductDto>> GetProduct(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await _context.Products
+                .Where(p => p.Id == id)
+                .Select(ToDto)
+                .FirstOrDefaultAsync();
             if (product == null)
             {
                 return NotFound();

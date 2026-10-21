@@ -87,7 +87,10 @@ class _MainScreenState extends State<MainScreen> {
                 return ListTile(
                   leading: const Icon(Icons.shopping_bag),
                   title: Text(p.name),
-                  subtitle: Text(p.description ?? ''),
+                  subtitle: Text(
+                    'Danh mục: ${p.categoryName ?? 'Chưa phân loại'}'
+                    '${p.description == null ? '' : '\n${p.description}'}',
+                  ),
                   trailing: Text('${p.price.toStringAsFixed(0)} đ'),
                 );
               },
