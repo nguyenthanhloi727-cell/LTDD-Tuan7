@@ -241,6 +241,18 @@ DB chưa có sản phẩm nào → backend tự tạo 3 danh mục + 6 sản ph�
 | 7j.5 | Tài khoản → **Đăng xuất** → xác nhận | Về màn Đăng nhập, bấm Back không quay lại được; đăng nhập lại / mở lại app vẫn vào đúng trang theo role (BT3) |
 | 7j.6 | Đăng nhập `admin` | Vẫn vào Trang Admin như cũ (nút vân tay / đăng xuất trên AppBar) |
 
+## 7k. Marketplace dạng lưới + tìm kiếm + lọc + sắp xếp (UP13)
+
+| # | Thao tác | Kết quả mong đợi |
+|---|---|---|
+| 7k.1 | Đăng nhập `user` → tab **Marketplace** | Lưới 2 cột: ảnh, tên (tối đa 2 dòng), giá `x.xxx.xxx đ` màu xanh đậm, tồn kho; sản phẩm số lượng 0 có ảnh mờ + nhãn đỏ **Hết hàng**; dòng "n sản phẩm · Mới nhất" |
+| 7k.2 | Gõ `chuot` rồi `IPHONE` vào ô tìm kiếm | Ra đúng sản phẩm có "Chuột…" / "iPhone…" (không phân biệt hoa thường, bỏ dấu); nút X xóa chữ hiện lại tất cả |
+| 7k.3 | Bấm chip một danh mục, rồi **Chưa phân loại**, rồi **Tất cả** | Chỉ còn sản phẩm của danh mục đó / sản phẩm chưa có danh mục / tất cả |
+| 7k.4 | Nút sắp xếp (góc phải AppBar) → Giá tăng dần / Giá giảm dần / Tên A→Z / Mới nhất | Lưới sắp xếp đúng thứ tự; mục đang chọn có dấu tích |
+| 7k.5 | Gõ `zzzz` | "Không tìm thấy sản phẩm" + nút **Xóa bộ lọc** → bấm thì hiện lại tất cả |
+| 7k.6 | Kéo xuống để tải lại; tắt backend rồi kéo | Có vòng tải, tải lại cả sản phẩm + danh mục; backend tắt thì hiện lỗi, bật lại kéo tiếp là có dữ liệu |
+| 7k.7 | Bấm một ô sản phẩm | Mở màn Chi tiết sản phẩm như UP9 |
+
 ## 8. Kiểm tra code trước khi nộp
 
 ```bash
