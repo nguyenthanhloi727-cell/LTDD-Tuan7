@@ -230,6 +230,17 @@ DB chưa có sản phẩm nào → backend tự tạo 3 danh mục + 6 sản ph�
 | 7i.4 | Bấm **Đăng ký** | Màn "Tạo tài khoản" có nút quay lại, các ô có icon (người, email, khóa, thẻ, điện thoại, tin nhắn); Gửi mã OTP + nút SIM + đăng ký chạy như 7f |
 | 7i.5 | Xem giá ở Trang User, Trang Admin, Chi tiết sản phẩm | Dạng `20.990.000 đ` (dấu chấm mỗi 3 số); ô nhập giá trong form sửa vẫn là số trơn |
 
+## 7j. Trang User có tab dưới (UP12)
+
+| # | Thao tác | Kết quả mong đợi |
+|---|---|---|
+| 7j.1 | Đăng nhập `user` | Có thanh tab dưới 3 tab **Trang chủ / Marketplace / Tài khoản**, mở ở tab Trang chủ; mỗi tab có tiêu đề AppBar riêng, AppBar không còn nút đăng xuất / vân tay |
+| 7j.2 | Trang chủ → bấm **Xem Marketplace** | Chuyển sang tab Marketplace, danh sách sản phẩm như trước (ảnh, giá, Hết hàng, bấm vào xem chi tiết, kéo để tải lại) |
+| 7j.3 | Ở Marketplace cuộn xuống giữa danh sách → sang tab khác → quay lại | Vẫn ở vị trí cũ, không hiện vòng tải lại |
+| 7j.4 | Tab **Tài khoản** | Avatar tròn chữ cái đầu, đúng tên đăng nhập, "Vai trò: User"; máy đã bật vân tay thì có dòng **Tắt đăng nhập vân tay** (bấm → xác nhận → dòng biến mất + SnackBar) |
+| 7j.5 | Tài khoản → **Đăng xuất** → xác nhận | Về màn Đăng nhập, bấm Back không quay lại được; đăng nhập lại / mở lại app vẫn vào đúng trang theo role (BT3) |
+| 7j.6 | Đăng nhập `admin` | Vẫn vào Trang Admin như cũ (nút vân tay / đăng xuất trên AppBar) |
+
 ## 8. Kiểm tra code trước khi nộp
 
 ```bash

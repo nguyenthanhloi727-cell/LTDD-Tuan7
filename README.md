@@ -6,7 +6,7 @@ Bài tuần 7 mở rộng project tuần 6 (danh sách sản phẩm):
 
 - `backend/`: ASP.NET Core 8 Web API, EF Core + SQL Server, ASP.NET Identity, JWT, 2 role `Admin` / `User`; lưu ảnh sản phẩm trong `wwwroot`.
 - `mobile/` (tên app trên máy: **Smart Auth**): Flutter, dùng `flutter_dotenv`, `jwt_decoder`, `shared_preferences`, `smart_auth`, `biometric_storage`, `image_picker`.
-  Màn hình: Đăng nhập, Đăng ký (OTP), trang User (`MainScreen`), Chi tiết sản phẩm, trang Admin (`AdminScreen`), Quản lý danh mục, Quản lý tài khoản; tự đăng nhập bằng token đã lưu.
+  Màn hình: Đăng nhập, Đăng ký (OTP), trang User (`MainScreen` có 3 tab: Trang chủ, Marketplace, Tài khoản), Chi tiết sản phẩm, trang Admin (`AdminScreen`), Quản lý danh mục, Quản lý tài khoản; tự đăng nhập bằng token đã lưu.
 
 ## Bài tập đã làm
 
@@ -38,6 +38,7 @@ Nâng cấp:
 | UP9 | Màn **Chi tiết sản phẩm** (User bấm vào sản phẩm, Admin nút 👁) | `ProductDetailScreen` |
 | UP10 | Admin **upload ảnh** sản phẩm từ thư viện ảnh; dữ liệu mẫu có ảnh | `POST api/Products/upload-image`, `ProductFormDialog`, `Data/SampleData.cs` |
 | UP11 | Theme chung (xanh, ô nhập bo tròn), giá dạng `20.990.000 đ`, giao diện mới Đăng nhập / Đăng ký | `theme/app_theme.dart`, `utils/format.dart` (`formatPrice`) |
+| UP12 | Trang User có thanh tab dưới **Trang chủ / Marketplace / Tài khoản** (đổi tab không tải lại); tab Tài khoản hiện tên đăng nhập + role, tắt vân tay, đăng xuất | `MainScreen` (`NavigationBar` + `IndexedStack`), `MarketplaceScreen`, `HomeScreen`, `AccountScreen`, `AuthService.getUsername` |
 
 Tài liệu API: [API.md](API.md). Kế hoạch + nhật ký từng bước: [PROGRESS.md](PROGRESS.md).
 
