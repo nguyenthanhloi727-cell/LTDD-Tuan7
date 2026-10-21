@@ -21,10 +21,10 @@ class _MainScreenState extends State<MainScreen> {
   final _marketplaceKey = GlobalKey<MarketplaceScreenState>();
 
   // Chuyen sang tab Marketplace kem bo loc (UP14 dung khi bam danh muc / tim kiem).
-  void openMarketplace({String? query, int? categoryId}) {
+  void openMarketplace({String? query, int? categoryId, ProductSort? sort}) {
     setState(() => _currentTab = _marketplaceTab);
     _marketplaceKey.currentState
-        ?.applyFilter(query: query, categoryId: categoryId);
+        ?.applyFilter(query: query, categoryId: categoryId, sort: sort);
   }
 
   @override

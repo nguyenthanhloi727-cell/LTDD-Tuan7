@@ -32,7 +32,7 @@
 - [x] UP11. Theme chung + định dạng giá + thiết kế lại Đăng nhập / Đăng ký
 - [x] UP12. Trang User có thanh tab dưới (Trang chủ / Marketplace / Tài khoản) + tab Tài khoản
 - [x] UP13. Marketplace: lưới sản phẩm + tìm kiếm + lọc danh mục + sắp xếp
-- [ ] UP14. Home Screen: lời chào, ô tìm kiếm, danh mục, sản phẩm mới, còn hàng ít
+- [x] UP14. Home Screen: lời chào, ô tìm kiếm, danh mục, sản phẩm mới, còn hàng ít
 
 ---
 
@@ -636,3 +636,7 @@ Người dùng tự kiểm tra:
   `_fetch()` tải sản phẩm rồi `CategoryService.getCategories()` vào `_categories` (kéo tải lại cả hai). `applyFilter({query, categoryId})` giữ nguyên chữ ký, giờ cũng điền `_searchController.text` → UP14 gọi qua `MainScreen.openMarketplace`.
   Mới `widgets/product_card.dart` (`ProductCard(product:, onTap:)`: ảnh `Expanded` để không tràn, hết hàng `Opacity 0.5` + nhãn đỏ). `ProductImage` thêm tham số `fill` (rộng theo ô, bỏ bo góc), mặc định `false` nên chỗ cũ không đổi.
   `utils/format.dart` thêm `removeDiacritics(text)` (chữ thường + bỏ dấu tiếng Việt), dùng cho tìm kiếm và sắp xếp tên — UP14 dùng lại được. TESTING 7k, README dòng UP13. Người dùng đã test OK.
+- UP14 (xong): `screens/home_screen.dart` viết lại thành `StatefulWidget`: `_fetch()` dùng `Future.wait` (sản phẩm + danh mục) → `_HomeData`; lời chào `AuthService.getUsername`, ô tìm `_searchController` (Enter → `_search` → Marketplace `query`, rồi xóa ô), banner gradient → `sort: ProductSort.newest`, hàng danh mục `CircleAvatar` (`_categoryIcon` so tên đã `removeDiacritics`), "Sản phẩm mới" `_newCount = 6` (id giảm dần, `ProductCard` rộng 160 cao 260), "Sắp hết hàng" `0 < quantity <= _lowStock (5)`, ít nhất lên trước, rỗng thì ẩn.
+  `MainScreen.openMarketplace` và `MarketplaceScreenState.applyFilter` thêm tham số tùy chọn `ProductSort? sort` (null = giữ kiểu sắp xếp hiện tại; gọi không tham số vẫn bỏ lọc).
+  Đã test trên Xiaomi (testuser): lời chào, danh mục → lọc, tìm `iphone`, banner về "Mới nhất", chi tiết, admin thêm sp số lượng 3 → kéo tải lại thấy ở cả 2 mục (sp test đã xóa). Chưa test tắt backend. TESTING 7l, README dòng UP14.
+  Lưu ý: màn Login sau UP11 đổi toạ độ (ô user y≈1148, mật khẩu y≈1345, nút y≈1558 khi chưa mở bàn phím); bong bóng Zalo có thể che nút AppBar bên phải.
