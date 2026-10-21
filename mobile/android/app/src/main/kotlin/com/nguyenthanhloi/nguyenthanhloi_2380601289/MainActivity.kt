@@ -1,5 +1,5 @@
 package com.nguyenthanhloi.nguyenthanhloi_2380601289
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+class MainActivity : FlutterFragmentActivity()

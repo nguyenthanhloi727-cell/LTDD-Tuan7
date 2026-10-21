@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/auth_service.dart';
 import '../services/product_service.dart';
+import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
 import 'login_screen.dart';
 
@@ -63,7 +64,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Danh sách sản phẩm'),
-        actions: const [LogoutButton()],
+        actions: const [BiometricOffButton(), LogoutButton()],
       ),
       body: FutureBuilder<List<Product>>(
         future: _futureProducts,
