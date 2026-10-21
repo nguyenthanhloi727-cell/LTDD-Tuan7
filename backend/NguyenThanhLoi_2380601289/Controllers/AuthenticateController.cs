@@ -36,17 +36,17 @@ namespace NguyenThanhLoi_2380601289.Controllers
         {
             var phone = OtpService.NormalizePhone(model.PhoneNumber);
             if (phone == null)
-                return BadRequest(new { message = "Số điện thoại không hợp lệ" });
+                return BadRequest(new { status = false, message = "Số điện thoại không hợp lệ" });
 
             if (await _userManager.Users.AnyAsync(u => u.PhoneNumber == phone))
-                return BadRequest(new { message = "Số điện thoại đã được sử dụng" });
+                return BadRequest(new { status = false, message = "Số điện thoại đã được sử dụng" });
 
             var waitSeconds = _otpService.Send(phone);
             if (waitSeconds > 0)
                 return StatusCode(StatusCodes.Status429TooManyRequests,
-                    new { message = $"Vui lòng đợi {waitSeconds} giây rồi gửi lại mã" });
+                    new { status = false, message = $"Vui lòng đợi {waitSeconds} giây rồi gửi lại mã" });
 
-            return Ok(new { message = "Đã gửi mã OTP", expiresInSeconds = (int)OtpService.Lifetime.TotalSeconds });
+            return Ok(new { status = true, message = "Đã gửi mã OTP", expiresInSeconds = (int)OtpService.Lifetime.TotalSeconds });
         }
 
         // POST: api/Authenticate/register
@@ -56,25 +56,25 @@ namespace NguyenThanhLoi_2380601289.Controllers
             // UP5: bat buoc SDT + ma OTP dung
             var phone = OtpService.NormalizePhone(model.PhoneNumber);
             if (phone == null)
-                return BadRequest(new { message = "Số điện thoại không hợp lệ" });
+                return BadRequest(new { status = false, message = "Số điện thoại không hợp lệ" });
 
             var userExists = await _userManager.FindByNameAsync(model.Username);
             if (userExists != null)
-                return BadRequest(new { message = "Tên đăng nhập đã tồn tại" });
+                return BadRequest(new { status = false, message = "Tên đăng nhập đã tồn tại" });
 
             // Kiem truoc bang AnyAsync: DB cu co the da co 2 tai khoan trung email
             // (FindByEmailAsync gap 2 dong se loi 500), du lieu cu giu nguyen, chi chan tao moi.
             var normalizedEmail = _userManager.NormalizeEmail(model.Email);
             if (!string.IsNullOrEmpty(normalizedEmail)
                 && await _userManager.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail))
-                return BadRequest(new { message = "Email đã được sử dụng" });
+                return BadRequest(new { status = false, message = "Email đã được sử dụng" });
 
             if (await _userManager.Users.AnyAsync(u => u.PhoneNumber == phone))
-                return BadRequest(new { message = "Số điện thoại đã được sử dụng" });
+                return BadRequest(new { status = false, message = "Số điện thoại đã được sử dụng" });
 
             // Ma chi bi xoa khi tao tai khoan thanh cong: sai mat khau... thi sua roi dang ky lai bang ma cu
             if (!_otpService.Verify(phone, model.Otp))
-                return BadRequest(new { message = "Mã OTP không đúng hoặc đã hết hạn" });
+                return BadRequest(new { status = false, message = "Mã OTP không đúng hoặc đã hết hạn" });
 
             var user = new User
             {
@@ -90,6 +90,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
             if (!result.Succeeded)
                 return BadRequest(new
                 {
+                    status = false,
                     message = "Tạo tài khoản thất bại",
                     errors = result.Errors.Select(e => new
                     {
@@ -102,7 +103,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
             await _userManager.AddToRoleAsync(user, "User");
             _otpService.Remove(phone);
 
-            return Ok(new { message = "Đăng ký thành công" });
+            return Ok(new { status = true, message = "Đăng ký thành công" });
         }
 
         // POST: api/Authenticate/login
@@ -111,11 +112,11 @@ namespace NguyenThanhLoi_2380601289.Controllers
         {
             var user = await _userManager.FindByNameAsync(model.Username);
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-                return Unauthorized(new { message = "Sai tên đăng nhập hoặc mật khẩu" });
+                return Unauthorized(new { status = false, message = "Sai tên đăng nhập hoặc mật khẩu" });
 
             // Admin da khoa tai khoan nay (UsersController.Lock)
             if (await _userManager.IsLockedOutAsync(user))
-                return Unauthorized(new { message = "Tài khoản đã bị khóa" });
+                return Unauthorized(new { status = false, message = "Tài khoản đã bị khóa" });
 
             var userRoles = await _userManager.GetRolesAsync(user);
 
@@ -141,6 +142,8 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
             return Ok(new
             {
+                status = true,
+                message = "Đăng nhập thành công",
                 token = new JwtSecurityTokenHandler().WriteToken(token),
                 expiration = token.ValidTo
             });

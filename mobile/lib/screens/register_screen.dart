@@ -21,6 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
   bool _loading = false;
+  bool _obscurePassword = true; // UP8: nut con mat hien/an mat khau
   bool _sendingOtp = false;
   bool _listeningSms = false;
 
@@ -157,10 +158,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             TextField(
               controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
                 labelText: 'Mật khẩu',
                 helperText: 'Ít nhất 6 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt',
+                suffixIcon: IconButton(
+                  tooltip: _obscurePassword ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+                  icon: Icon(_obscurePassword
+                      ? Icons.visibility_off
+                      : Icons.visibility),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
               ),
             ),
             TextField(

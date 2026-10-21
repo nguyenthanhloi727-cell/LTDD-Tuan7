@@ -26,6 +26,9 @@
 - [x] UP5. Đăng ký bắt buộc OTP qua SMS (smart_auth SMS User Consent tự điền mã)
 - [x] UP6. Nút "Gửi mã" tự gửi SMS giả lập vào máy ảo (backend gọi `adb emu sms send`)
 - [x] UP7. Admin xóa sản phẩm + tên hiển thị app "Smart Auth"
+- [x] UP8. Nút hiện/ẩn mật khẩu + ảnh sản phẩm + login/register trả `status`, `message` (giống bài mẫu)
+- [x] UP9. Màn chi tiết sản phẩm (User) + nút "Xem chi tiết" ở Trang Admin
+- [x] UP10. Upload ảnh sản phẩm + dữ liệu mẫu
 
 ---
 
@@ -406,6 +409,40 @@ Người dùng tự kiểm tra:
 
 ---
 
+### UP8. Nút hiện/ẩn mật khẩu + ảnh sản phẩm + login/register trả `status`, `message` (giống bài mẫu)
+
+Đối chiếu ảnh trong file bài mẫu `LTDD Tuan7 V2.docx`.
+
+1. `LoginScreen`, `RegisterScreen`: ô mật khẩu có nút con mắt (`_obscurePassword`).
+2. Mới `widgets/product_image.dart` (`ProductImage`): `Image.network(imageUrl)`, đường dẫn bắt đầu bằng `/` thì ghép `BASE_URL`; không có ảnh / lỗi → icon túi như cũ. Dùng ở `MainScreen`, `AdminScreen`. `ProductFormDialog` thêm ô "Link ảnh".
+3. `AuthenticateController`: login/register trả thêm `status` (true/false) + `message` (giữ `token`, `expiration`).
+
+Commit: `feat: hien/an mat khau + anh san pham + status/message cho login` — add: `backend/ mobile/ PROGRESS.md`
+
+### UP9. Màn chi tiết sản phẩm (User) + nút "Xem chi tiết" ở Trang Admin
+
+1. Mới `screens/product_detail_screen.dart` (`ProductDetailScreen(product)`): ảnh lớn, tên, giá, tồn kho (`StockText`), danh mục, mô tả.
+2. `MainScreen`: bấm sản phẩm → mở chi tiết. `AdminScreen`: thêm nút `Icons.visibility` "Xem chi tiết" cạnh sửa/xóa.
+
+Commit: `feat: man chi tiet san pham` — add: `mobile/ PROGRESS.md`
+
+### UP10. Upload ảnh sản phẩm + dữ liệu mẫu
+
+1. Backend: `POST api/Products/upload-image` (Admin, form-data `file`; jpg/jpeg/png/webp/gif, tối đa 5 MB) → lưu `wwwroot/uploads/products/<guid>.<đuôi>` → trả `{ url: "/uploads/products/..." }`; `Program.cs` `UseStaticFiles()`. Thư mục uploads không commit (`.gitignore`).
+2. Dữ liệu mẫu: ảnh mẫu `wwwroot/images/samples/*.png` (commit); `Program.cs` DB chưa có sản phẩm nào thì tạo vài danh mục + sản phẩm mẫu có ảnh.
+3. Mobile: gói `image_picker`; `ProductFormDialog` nút "Chọn ảnh" → chọn từ thư viện → `ProductService.uploadImage(file)` → điền link + xem trước ảnh. iOS `NSPhotoLibraryUsageDescription`.
+4. `API.md`, `TESTING.md` (mục 7h).
+
+Commit: `feat: upload anh san pham + du lieu mau` — add: `backend/ mobile/ API.md TESTING.md README.md PROGRESS.md`
+
+Người dùng tự kiểm tra (UP8–UP10):
+- [ ] Đăng nhập / Đăng ký: bấm con mắt → hiện mật khẩu, bấm lại → ẩn
+- [ ] Trang User: sản phẩm có ảnh hiện ảnh, không có ảnh hiện icon; bấm sản phẩm → màn chi tiết
+- [ ] Trang Admin: nút 👁 mở chi tiết; Thêm/Sửa → "Chọn ảnh" → chọn ảnh trong máy → Lưu → ảnh hiện trong danh sách và chi tiết
+- [ ] Swagger login trả `status`, `message`, `token`
+
+---
+
 ## 3. Nhật ký bàn giao
 
 > Mỗi bước ghi 3–5 dòng ngay dưới đây, mới nhất ở dưới cùng. Phiên sau đọc mục này thay vì quét lại code.
@@ -492,3 +529,10 @@ Người dùng tự kiểm tra:
   `ProductService.deleteProduct(id)`: `DELETE api/Products/{id}`, 204 ok, 401/403/404 → `ApiException` (404 "Sản phẩm không còn tồn tại").
   `AdminScreen`: `trailing` = Row nút sửa (`_openForm(p)`) + nút xóa (`_deleteProduct(p)`: dialog xác nhận → xóa → SnackBar → `_reload()`; lỗi 404 cũng tải lại). Bấm dòng vẫn mở form sửa.
   Đã test trên Xiaomi: Hủy không xóa, Xóa thì mất khỏi danh sách; `aapt` đọc APK ra `application-label:'Smart Auth'`. `TESTING.md` mục 7g.
+- UP8–UP10 (xong, gộp 1 commit `feat: hien/an mat khau + anh/chi tiet/upload anh san pham + du lieu mau` vì sửa chung `admin_screen.dart`, `product_form_dialog.dart`).
+- UP8: `LoginScreen`/`RegisterScreen` biến `_obscurePassword` + `suffixIcon` con mắt. Mới `widgets/product_image.dart` (`ProductImage(url, size)`, `fullUrl()`: url bắt đầu `/` → ghép `ConfigUrl.baseUrl`; null/lỗi → icon túi) dùng ở Main/Admin. `ProductFormDialog` thêm ô Mô tả (`_descriptionController`) + Link ảnh (`_imageUrlController`), rỗng → null.
+  `AuthenticateController`: mọi kết quả có `status` (true/false) + `message`; login thêm `message = "Đăng nhập thành công"` (giữ `token`, `expiration`) — app không phải sửa.
+- UP9: mới `screens/product_detail_screen.dart` (`ProductDetailScreen(product)`, chỉ xem, dùng object truyền vào, không gọi lại API). `MainScreen` ListTile `onTap` mở chi tiết; `AdminScreen` trailing thêm `IconButton(Icons.visibility)` trước sửa/xóa.
+- UP10: `ProductsController.UploadImage` (`POST api/Products/upload-image`, Admin, `IFormFile file`, đuôi jpg/jpeg/png/webp/gif, ≤ 5 MB, tên `Guid` → `wwwroot/uploads/products`, trả `{ url }`); `Program.cs` `app.UseStaticFiles()` + `SampleData.SeedAsync` (mới `Data/SampleData.cs`: DB chưa có sản phẩm → 3 danh mục + 6 sản phẩm, ảnh `wwwroot/images/samples/*.png` vẽ bằng System.Drawing, có commit). `.gitignore` bỏ `wwwroot/uploads/`.
+  Mobile: gói `image_picker: ^1.2.4` (không đổi version gói cũ); `ConfigUrl.uploadProductImage`; `ProductService.uploadImage(path)` (MultipartRequest, chỉ header Authorization); `ProductFormDialog._pickAndUpload` (maxWidth 1200, quality 85) + xem trước `ValueListenableBuilder` + `_uploading` khóa nút Lưu. iOS `NSPhotoLibraryUsageDescription`. API.md, TESTING 7h.
+  Đã test trên Xiaomi + curl; seed test trên DB tạm rồi xóa. DB máy này đã thêm 3 danh mục + 6 sản phẩm mẫu qua API. Lưu ý: gửi JSON tiếng Việt bằng curl trong Git Bash bị lỗi dấu → dùng PowerShell + UTF-8. Xóa sản phẩm chưa xóa file ảnh upload.

@@ -19,7 +19,8 @@ Chỉ 3 API trong nhóm **Authenticate** gọi được khi chưa đăng nhập.
    ```
    Kết quả `200`:
    ```json
-   { "token": "eyJhbGciOiJIUzI1NiIs...", "expiration": "2026-10-21T15:00:00Z" }
+   { "status": true, "message": "Đăng nhập thành công",
+     "token": "eyJhbGciOiJIUzI1NiIs...", "expiration": "2026-10-21T15:00:00Z" }
    ```
 2. Copy giá trị `token` (không lấy dấu ngoặc kép).
 3. Bấm nút **Authorize** 🔓 ở góc phải trên → dán token vào ô **Value** → **Authorize** → **Close**.
@@ -43,6 +44,7 @@ Tài khoản Admin có sẵn: `admin` / `Admin@123` (tạo tự động khi ch�
 | | `POST /api/Products` | Admin | Thêm sản phẩm |
 | | `PUT /api/Products/{id}` | Admin | Sửa sản phẩm |
 | | `DELETE /api/Products/{id}` | Admin | Xóa sản phẩm |
+| | `POST /api/Products/upload-image` | Admin | Upload ảnh sản phẩm, trả về đường dẫn ảnh |
 | Categories | `GET /api/Categories` | Đã đăng nhập | Danh sách danh mục (sắp theo tên) |
 | | `GET /api/Categories/{id}` | Đã đăng nhập | Xem 1 danh mục |
 | | `POST /api/Categories` | Admin | Thêm danh mục |
@@ -73,7 +75,7 @@ Tài khoản Admin có sẵn: `admin` / `Admin@123` (tạo tự động khi ch�
 ```json
 { "phoneNumber": "0900000001" }
 ```
-- `200` `{ "message": "Đã gửi mã OTP", "expiresInSeconds": 300 }`
+- `200` `{ "status": true, "message": "Đã gửi mã OTP", "expiresInSeconds": 300 }`
 - Mã **không** trả về trong API. Xem cửa sổ chạy backend (Output / console), có dòng:
   ```
   [OTP] 0900000001: 123456 | Gia lap gui SMS: adb emu sms send 0900000001 "Ma OTP dang ky cua ban la 123456"
@@ -93,7 +95,7 @@ Tài khoản Admin có sẵn: `admin` / `Admin@123` (tạo tự động khi ch�
   "otp": "<mã>"
 }
 ```
-- `200` `{ "message": "Đăng ký thành công" }`
+- `200` `{ "status": true, "message": "Đăng ký thành công" }` (lỗi thì `"status": false` + `message`)
 - Lỗi `400`: "Tên đăng nhập đã tồn tại", "Email đã được sử dụng", "Số điện thoại đã được sử dụng", "Mã OTP không đúng hoặc đã hết hạn", hoặc lỗi mật khẩu trong `errors`.
 - Mật khẩu: ít nhất 6 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt (ví dụ `User@123`).
 - Gửi thêm `"role": "Admin"` cũng bị bỏ qua, tài khoản luôn là `User`.
@@ -133,6 +135,15 @@ Tài khoản Admin có sẵn: `admin` / `Admin@123` (tạo tự động khi ch�
 - `204` = đã sửa. `id` lệch nhau → `400`. Không có sản phẩm → `404`.
 
 **Xóa** (Admin): `DELETE /api/Products/{id}` → `204`; không có → `404`.
+
+**Upload ảnh** (Admin): `POST /api/Products/upload-image`
+1. Try it out → ô `file` bấm **Choose File** → chọn ảnh `.jpg/.jpeg/.png/.webp/.gif` (tối đa 5 MB) → Execute.
+2. Kết quả `200`: `{ "url": "/uploads/products/3f2a...c1.png" }`
+3. Dùng `url` đó làm `imageUrl` khi `POST`/`PUT` sản phẩm. Xem ảnh trên trình duyệt: `http://localhost:5080/uploads/products/3f2a...c1.png`.
+- Lỗi `400`: "Chỉ nhận ảnh .jpg, .jpeg, .png, .webp, .gif", "Ảnh tối đa 5 MB", không chọn file.
+- `imageUrl` cũng nhận link ngoài (`https://...`).
+
+**Dữ liệu mẫu:** chạy backend trên DB **chưa có sản phẩm nào** thì tự tạo 3 danh mục (Điện thoại, Laptop, Phụ kiện) + 6 sản phẩm có ảnh (`/images/samples/*.png`). DB đã có sản phẩm thì không thêm gì.
 
 ## 6. Categories — danh mục
 

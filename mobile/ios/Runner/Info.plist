@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Chọn ảnh sản phẩm để tải lên</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Dung Face ID de dang nhap nhanh</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
