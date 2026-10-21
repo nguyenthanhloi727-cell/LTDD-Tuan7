@@ -141,73 +141,107 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Đăng ký')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Tên đăng nhập'),
-            ),
-            TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                labelText: 'Mật khẩu',
-                helperText: 'Ít nhất 6 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt',
-                suffixIcon: IconButton(
-                  tooltip: _obscurePassword ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
-                  icon: Icon(_obscurePassword
-                      ? Icons.visibility_off
-                      : Icons.visibility),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
+      // AppBar trong de co nut quay lai man Dang nhap
+      appBar: AppBar(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Tạo tài khoản',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Đăng ký tài khoản Smart Auth',
+                style: TextStyle(color: Colors.black54),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: _usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Tên đăng nhập',
+                  prefixIcon: Icon(Icons.person),
                 ),
               ),
-            ),
-            TextField(
-              controller: _initialsController,
-              decoration: const InputDecoration(labelText: 'Tên viết tắt'),
-            ),
-            TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: 'Số điện thoại',
-                // Nut lay SDT tu SIM chi hien tren Android
-                suffixIcon: Platform.isAndroid
-                    ? IconButton(
-                        icon: const Icon(Icons.sim_card),
-                        tooltip: 'Lấy số từ SIM',
-                        onPressed: _pickPhoneNumber,
-                      )
-                    : null,
-              ),
-            ),
-            TextField(
-              controller: _otpController,
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: InputDecoration(
-                labelText: 'Mã OTP',
-                counterText: '',
-                suffixIcon: TextButton(
-                  onPressed: _sendingOtp ? null : _sendOtp,
-                  child: const Text('Gửi mã'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  prefixIcon: Icon(Icons.email),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
+              const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  labelText: 'Mật khẩu',
+                  helperText:
+                      'Ít nhất 6 ký tự, có chữ hoa, chữ thường, số, ký tự đặc biệt',
+                  helperMaxLines: 2,
+                  prefixIcon: const Icon(Icons.lock),
+                  suffixIcon: IconButton(
+                    tooltip: _obscurePassword ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility_off
+                        : Icons.visibility),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _initialsController,
+                decoration: const InputDecoration(
+                  labelText: 'Tên viết tắt',
+                  prefixIcon: Icon(Icons.badge),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: 'Số điện thoại',
+                  prefixIcon: const Icon(Icons.phone),
+                  // Nut lay SDT tu SIM chi hien tren Android
+                  suffixIcon: Platform.isAndroid
+                      ? IconButton(
+                          icon: const Icon(Icons.sim_card),
+                          tooltip: 'Lấy số từ SIM',
+                          onPressed: _pickPhoneNumber,
+                        )
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _otpController,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                decoration: InputDecoration(
+                  labelText: 'Mã OTP',
+                  counterText: '',
+                  prefixIcon: const Icon(Icons.sms),
+                  suffixIcon: TextButton(
+                    onPressed: _sendingOtp ? null : _sendOtp,
+                    child: const Text('Gửi mã'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
                 onPressed: _loading ? null : _register,
                 child: _loading
                     ? const SizedBox(
@@ -217,8 +251,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       )
                     : const Text('Đăng ký'),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

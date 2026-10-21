@@ -37,6 +37,7 @@ Nâng cấp:
 | UP8 | Nút hiện / ẩn mật khẩu; ảnh sản phẩm trong danh sách; API login / register trả `status`, `message` như bài mẫu | `LoginScreen`, `RegisterScreen`, `ProductImage`, `AuthenticateController` |
 | UP9 | Màn **Chi tiết sản phẩm** (User bấm vào sản phẩm, Admin nút 👁) | `ProductDetailScreen` |
 | UP10 | Admin **upload ảnh** sản phẩm từ thư viện ảnh; dữ liệu mẫu có ảnh | `POST api/Products/upload-image`, `ProductFormDialog`, `Data/SampleData.cs` |
+| UP11 | Theme chung (xanh, ô nhập bo tròn), giá dạng `20.990.000 đ`, giao diện mới Đăng nhập / Đăng ký | `theme/app_theme.dart`, `utils/format.dart` (`formatPrice`) |
 
 Tài liệu API: [API.md](API.md). Kế hoạch + nhật ký từng bước: [PROGRESS.md](PROGRESS.md).
 

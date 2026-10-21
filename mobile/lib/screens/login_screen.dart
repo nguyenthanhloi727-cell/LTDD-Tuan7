@@ -160,63 +160,104 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Đăng nhập')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Tên đăng nhập'),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                labelText: 'Mật khẩu',
-                suffixIcon: IconButton(
-                  tooltip: _obscurePassword ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
-                  icon: Icon(_obscurePassword
-                      ? Icons.visibility_off
-                      : Icons.visibility),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Logo + ten app
+                CircleAvatar(
+                  radius: 40,
+                  backgroundColor: colorScheme.primary,
+                  child: const Icon(Icons.shopping_bag,
+                      size: 40, color: Colors.white),
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _loading ? null : _login,
-                child: _loading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Đăng nhập'),
-              ),
-            ),
-            // Chi hien khi may ho tro va da bat van tay
-            if (_biometricSupported && _biometricEnabled)
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _loading ? null : _loginWithBiometric,
-                  icon: const Icon(Icons.fingerprint),
-                  label: const Text('Đăng nhập bằng vân tay'),
+                const SizedBox(height: 16),
+                Text(
+                  'Smart Auth',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-              ),
-            TextButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const RegisterScreen()),
-              ),
-              child: const Text('Chưa có tài khoản? Đăng ký'),
+                const SizedBox(height: 4),
+                const Text(
+                  'Đăng nhập để tiếp tục',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.black54),
+                ),
+                const SizedBox(height: 32),
+                TextField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Tên đăng nhập',
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Mật khẩu',
+                    prefixIcon: const Icon(Icons.lock),
+                    suffixIcon: IconButton(
+                      tooltip:
+                          _obscurePassword ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+                      icon: Icon(_obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: _loading ? null : _login,
+                  child: _loading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Đăng nhập'),
+                ),
+                // Chi hien khi may ho tro va da bat van tay
+                if (_biometricSupported && _biometricEnabled) ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _loading ? null : _loginWithBiometric,
+                    icon: const Icon(Icons.fingerprint),
+                    label: const Text('Đăng nhập bằng vân tay'),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Chưa có tài khoản?'),
+                    TextButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const RegisterScreen()),
+                      ),
+                      child: const Text(
+                        'Đăng ký',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
