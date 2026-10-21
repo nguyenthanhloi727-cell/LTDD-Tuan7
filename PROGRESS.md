@@ -8,7 +8,7 @@
 ## 1. Tiến độ
 
 - [x] P0. Khởi tạo git + đẩy code tuần 6
-- [ ] P1. Backend: Identity + JWT + Role
+- [x] P1. Backend: Identity + JWT + Role
 - [ ] P2. Flutter: dotenv + jwt_decoder + đăng nhập/đăng ký + tự đăng nhập
 - [ ] BT1. Đăng xuất
 - [ ] BT2. Đăng nhập đúng giao diện theo role
@@ -258,3 +258,8 @@ Người dùng tự kiểm tra (demo cho thầy):
   Mobile `nguyenthanhloi_2380601289`: `config/config_url.dart` (baseUrl `http://10.0.2.2:5080`), `models/product.dart`, `services/product_service.dart`, `screens/main_screen.dart`; Manifest thêm INTERNET + usesCleartextTraffic. `flutter analyze` sạch.
   Đã cài .NET 8 SDK 8.0.426 (winget). `dotnet-ef` global là bản 10.0.8, dùng được với EF 8 → giữ nguyên. Migration `InitialProduct` + database update xong, `dotnet build backend` 0 lỗi.
   Repo public: https://github.com/nguyenthanhloi727-cell/LTDD-Tuan7. Bước sau (P1): đổi `ApplicationDbContext` sang `IdentityDbContext<User>`, giữ `DbSet<Product>`.
+- P1 (xong): `Models/User.cs` (`User : IdentityUser` + `Initials`); `ApplicationDbContext : IdentityDbContext<User>`, `HasDefaultSchema("identity")` (bảng Products cũng sang schema identity). Gói Identity.EFCore + JwtBearer 8.0.3.
+  `Controllers/AuthenticateController.cs`: POST `api/Authenticate/register` (role trống → "User", role chưa có thì tạo), POST `api/Authenticate/login` trả `{ token, expiration }` (claim Name, Jti, Role; hạn 3 giờ). Config `JWT:ValidIssuer/ValidAudience/Secret` trong `appsettings.json`.
+  `Program.cs`: AddIdentity, AddJwtBearer, Swagger nút Authorize, seed role Admin/User, `UseAuthentication()` trước `UseAuthorization()`. Migration `InitialIdentityModel`.
+  Chạy máy khác: `Program.cs` tự `Database.Migrate()` lúc khởi động + thử `.\SQLEXPRESS` 3s, không được thì dùng `LocalDbConnection` `(localdb)\MSSQLLocalDB` → clone về bấm Run là chạy.
+  Lưu ý cho P2: `dotnet` không có trong PATH của Claude, gọi `C:\Program Files\dotnet\dotnet.exe`. DB máy mới trống, phải register lại tài khoản.
