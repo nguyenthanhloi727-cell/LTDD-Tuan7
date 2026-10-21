@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:smart_auth/smart_auth.dart';
 
 import '../services/auth_service.dart';
 
@@ -15,6 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _initialsController = TextEditingController();
+  final _phoneController = TextEditingController();
   bool _loading = false;
 
   @override
@@ -23,7 +27,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _initialsController.dispose();
+    _phoneController.dispose();
     super.dispose();
+  }
+
+  // BT5: smart_auth - Phone Number Hint API (chi co tren Android, can Google Play services).
+  // Hien hop thoai chon so dien thoai cua SIM, chon xong thi dien vao o SDT.
+  Future<void> _pickPhoneNumber() async {
+    final result = await SmartAuth.instance.requestPhoneNumberHint();
+    if (!mounted) return;
+    if (result.hasData) {
+      setState(() => _phoneController.text = result.requireData);
+    } else if (result.hasError) {
+      _showMessage('Không lấy được số điện thoại từ SIM');
+    }
+    // Nguoi dung bam huy thi khong lam gi
   }
 
   Future<void> _register() async {
@@ -31,6 +49,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final initials = _initialsController.text.trim();
+    final phone = _phoneController.text.trim();
     if (username.isEmpty || email.isEmpty || password.isEmpty) {
       _showMessage('Nhập đủ tên đăng nhập, email, mật khẩu');
       return;
@@ -39,7 +58,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _loading = true);
     String? error;
     try {
-      error = await _authService.register(username, email, password, initials);
+      error = await _authService.register(username, email, password, initials,
+          phoneNumber: phone.isEmpty ? null : phone);
     } catch (e) {
       error = 'Không kết nối được API: $e';
     }
@@ -87,6 +107,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
             TextField(
               controller: _initialsController,
               decoration: const InputDecoration(labelText: 'Tên viết tắt'),
+            ),
+            TextField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Số điện thoại (không bắt buộc)',
+                // Nut lay SDT tu SIM chi hien tren Android
+                suffixIcon: Platform.isAndroid
+                    ? IconButton(
+                        icon: const Icon(Icons.sim_card),
+                        tooltip: 'Lấy số từ SIM',
+                        onPressed: _pickPhoneNumber,
+                      )
+                    : null,
+              ),
             ),
             const SizedBox(height: 24),
             SizedBox(

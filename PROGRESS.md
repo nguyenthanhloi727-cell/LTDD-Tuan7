@@ -17,7 +17,7 @@
 - [x] BT6+8. Category + Product.CategoryId nullable + xóa danh mục thì set null
 - [x] BT7. Admin thêm/xóa/sửa danh mục
 - [x] BIO. Đăng nhập nhanh bằng vân tay với biometric_storage
-- [ ] BT5. smart_auth (điểm cộng)
+- [x] BT5. smart_auth (điểm cộng)
 - [ ] FINAL. README + soát repo + tag nộp bài
 
 ---
@@ -297,3 +297,7 @@ Người dùng tự kiểm tra (demo cho thầy):
   `android/build.gradle.kts`: `afterEvaluate` ép `compileSdk = 36` cho subproject `biometric_storage` (plugin khai 31, androidx.biometric cần ≥ 33) — BT5 sửa gradle thì giữ đoạn này.
   Mới `services/biometric_service.dart` (`BiometricService`: `isSupported`, `isEnabled`, `saveCredentials`, `readCredentials`, `disable`; storage `login_credentials` lưu JSON username/password, flag prefs `biometric_enabled`). Mới `widgets/biometric_off_button.dart` (`BiometricOffButton`, gắn AppBar `MainScreen` + `AdminScreen`).
   `LoginScreen`: tách `_callLogin` (trả record `error`, `connectionError`) + `_goToHome` (điều hướng theo role); login mật khẩu ok mà chưa bật → hỏi bật; `_loginWithBiometric` bị API từ chối → `disable()`. `LogoutButton` không đụng dữ liệu vân tay.
+- BT5 (xong): gói `smart_auth: ^3.2.0` (bản 3.x đã bỏ Smart Lock saveCredential/getCredential, chỉ còn Phone Number Hint, SMS User Consent, SMS Retriever). Không sửa `android/` (plugin compileSdk 35, minSdk 16).
+  `RegisterScreen`: ô "Số điện thoại (không bắt buộc)" (`_phoneController`), nút `Icons.sim_card` chỉ hiện khi `Platform.isAndroid` → `_pickPhoneNumber()` gọi `SmartAuth.instance.requestPhoneNumberHint()` (`hasData` điền số, `hasError` báo SnackBar, hủy thì bỏ qua).
+  `AuthService.register(..., {String? phoneNumber})` gửi key `phoneNumber`. Backend `RegisterModel.PhoneNumber` → `User.PhoneNumber` (cột Identity có sẵn, không migration).
+  Cho FINAL: còn `debugPrint('JWT payload: ...')` có TODO trong `AuthService.getRole` cần xóa.

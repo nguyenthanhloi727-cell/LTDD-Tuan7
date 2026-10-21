@@ -37,6 +37,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
                 UserName = model.Username,
                 Email = model.Email,
                 Initials = model.Initials,
+                PhoneNumber = model.PhoneNumber,
                 SecurityStamp = Guid.NewGuid().ToString()
             };
 
@@ -96,6 +97,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string Initials { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; }
         public string Role { get; set; } = "User";
     }
 
