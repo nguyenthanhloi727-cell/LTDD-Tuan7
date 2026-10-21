@@ -92,6 +92,27 @@ class ProductService {
     }
   }
 
+  // Admin: DELETE san pham. 404 = da bi xoa truoc do (vd o may khac).
+  Future<void> deleteProduct(int id) async {
+    final response = await http.delete(
+      Uri.parse('${ConfigUrl.products}/$id'),
+      headers: await _headers(),
+    );
+    if (response.statusCode == 401) {
+      throw ApiException(401, 'Phiên đăng nhập hết hạn');
+    }
+    if (response.statusCode == 403) {
+      throw ApiException(403, 'Không có quyền');
+    }
+    if (response.statusCode == 404) {
+      throw ApiException(404, 'Sản phẩm không còn tồn tại');
+    }
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw ApiException(
+          response.statusCode, 'Lỗi xóa sản phẩm: ${response.statusCode}');
+    }
+  }
+
   // Loi 400: { message } (vd "Danh muc khong ton tai")
   // hoac { errors: { Price: [...] } } (loi [Range] cua ASP.NET).
   String _readMessage(String body, String fallback) {
