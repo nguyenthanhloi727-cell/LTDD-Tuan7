@@ -60,6 +60,7 @@ Nâng cấp:
    ```
 
 Quy trình test chi tiết từng bài: [TESTING.md](TESTING.md).
+Cách gọi từng API trong Swagger (đăng nhập, gắn token, body mẫu, mã lỗi): [API.md](API.md).
 
 ## Tài khoản test
 
