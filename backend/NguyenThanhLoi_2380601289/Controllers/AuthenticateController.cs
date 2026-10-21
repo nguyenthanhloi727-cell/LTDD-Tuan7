@@ -45,12 +45,8 @@ namespace NguyenThanhLoi_2380601289.Controllers
             if (!result.Succeeded)
                 return BadRequest(new { message = "Tạo tài khoản thất bại", errors = result.Errors });
 
-            // Role chua co thi tao moi
-            var role = string.IsNullOrWhiteSpace(model.Role) ? "User" : model.Role;
-            if (!await _roleManager.RoleExistsAsync(role))
-                await _roleManager.CreateAsync(new IdentityRole(role));
-
-            await _userManager.AddToRoleAsync(user, role);
+            // Dang ky luon la User; tai khoan Admin duy nhat duoc tao san luc khoi dong (Program.cs)
+            await _userManager.AddToRoleAsync(user, "User");
 
             return Ok(new { message = "Đăng ký thành công" });
         }
@@ -62,6 +58,10 @@ namespace NguyenThanhLoi_2380601289.Controllers
             var user = await _userManager.FindByNameAsync(model.Username);
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return Unauthorized(new { message = "Sai tên đăng nhập hoặc mật khẩu" });
+
+            // Admin da khoa tai khoan nay (UsersController.Lock)
+            if (await _userManager.IsLockedOutAsync(user))
+                return Unauthorized(new { message = "Tài khoản đã bị khóa" });
 
             var userRoles = await _userManager.GetRolesAsync(user);
 
@@ -98,7 +98,6 @@ namespace NguyenThanhLoi_2380601289.Controllers
         public string Password { get; set; } = string.Empty;
         public string Initials { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
-        public string Role { get; set; } = "User";
     }
 
     public class LoginModel

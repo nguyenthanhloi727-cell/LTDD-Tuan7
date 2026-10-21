@@ -19,7 +19,7 @@
 - [x] BIO. Đăng nhập nhanh bằng vân tay với biometric_storage
 - [x] BT5. smart_auth (điểm cộng)
 - [x] FINAL. README + soát repo + tag nộp bài
-- [ ] UP1. Chỉ 1 tài khoản Admin + Admin quản lý (khóa/mở khóa) tài khoản
+- [x] UP1. Chỉ 1 tài khoản Admin + Admin quản lý (khóa/mở khóa) tài khoản
 - [ ] UP2. Token: tự đăng xuất khi hết hạn/bị thu hồi + nút thu hồi token
 - [ ] UP3. Số lượng + "Hết hàng" + chặn số âm + email không trùng + lỗi danh mục không tồn tại
 - [ ] UP4. Kéo xuống để tải lại + dispose TextEditingController
@@ -408,3 +408,8 @@ Người dùng tự kiểm tra:
   Mới `README.md` ở gốc: bảng BT1–BT8 + vân tay, môi trường, chạy backend (cổng 5080, tự `Database.Migrate()`, fallback LocalDB), chạy mobile (`.env` máy ảo / điện thoại qua `adb reverse`).
   Tài khoản test không seed sẵn: README hướng dẫn tạo `admin`/`user` qua Swagger `POST /api/Authenticate/register`.
   Soát: không có bin/obj/build/.dart_tool trong git; `dotnet build` và `flutter analyze` sạch. Tag nộp bài: `tuan7-nop`.
+- UP1 (xong): `appsettings.json` mục `AdminAccount` (`admin`/`admin@test.com`/`Admin@123`); `Program.cs` sau seed role: chưa có user role Admin thì tạo từ `AdminAccount` (có Admin rồi thì bỏ qua).
+  `AuthenticateController`: `Register` luôn gán role `User`, bỏ `RegisterModel.Role` (`_roleManager` còn inject nhưng không dùng); `Login` kiểm `IsLockedOutAsync` → 401 "Tài khoản đã bị khóa".
+  Mới `Controllers/UsersController.cs` `[Authorize(Roles = "Admin")]`: `GET api/Users` (`id, username, email, phoneNumber, role, isLocked`), `POST {id}/lock` (LockoutEnd = MaxValue, Admin → 400), `POST {id}/unlock`.
+  Mobile: `ConfigUrl.users`, `models/app_user.dart` (`AppUser`, `isAdmin`), `services/user_service.dart` (`getUsers`, `lock`, `unlock`; `_check` đọc `message` từ body), `screens/user_management_screen.dart`; `AdminScreen` AppBar nút `Icons.people`.
+  Cho UP2: khóa chỉ chặn đăng nhập mới, token cũ vẫn dùng được. README/TESTING đã đổi sang Admin seed sẵn, TESTING thêm mục 7b. `_headers()` giờ lặp ở 3 service.

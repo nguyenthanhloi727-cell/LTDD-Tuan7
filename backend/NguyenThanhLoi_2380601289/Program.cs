@@ -97,6 +97,26 @@ using (var scope = app.Services.CreateScope())
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
     }
+
+    // Chua co ai la Admin thi tao 1 tai khoan Admin tu muc AdminAccount trong appsettings.json
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    if ((await userManager.GetUsersInRoleAsync("Admin")).Count == 0)
+    {
+        var adminConfig = app.Configuration.GetSection("AdminAccount");
+        var admin = new User
+        {
+            UserName = adminConfig["Username"],
+            Email = adminConfig["Email"],
+            Initials = "AD",
+            SecurityStamp = Guid.NewGuid().ToString()
+        };
+        var result = await userManager.CreateAsync(admin, adminConfig["Password"]!);
+        if (result.Succeeded)
+            await userManager.AddToRoleAsync(admin, "Admin");
+        else
+            Console.WriteLine("Khong tao duoc tai khoan Admin: " +
+                string.Join("; ", result.Errors.Select(e => e.Description)));
+    }
 }
 
 if (app.Environment.IsDevelopment())

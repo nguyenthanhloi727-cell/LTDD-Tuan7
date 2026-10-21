@@ -8,4 +8,5 @@ class ConfigUrl {
   static String get register => '$baseUrl/api/Authenticate/register';
   static String get products => '$baseUrl/api/Products';
   static String get categories => '$baseUrl/api/Categories';
+  static String get users => '$baseUrl/api/Users';
 }
