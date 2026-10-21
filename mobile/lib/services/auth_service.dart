@@ -11,6 +11,9 @@ class AuthService {
   // ASP.NET dung ClaimTypes.Role -> ten claim dai trong JWT
   static const String roleClaim =
       'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
+  // Backend tao claim ClaimTypes.Name -> ten claim dai trong JWT
+  static const String nameClaim =
+      'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
 
   // Goi API login, thanh cong thi luu token. Tra ve null neu ok, nguoc lai la thong bao loi.
   Future<String?> login(String username, String password) async {
@@ -87,6 +90,12 @@ class AuthService {
     final role = decoded[roleClaim] ?? decoded['role'];
     final roles = role is List ? role : [role];
     return roles.contains('Admin') ? 'Admin' : 'User';
+  }
+
+  // UP12: lay ten dang nhap tu token (tab Tai khoan hien thi).
+  String getUsername(String token) {
+    final decoded = JwtDecoder.decode(token);
+    return (decoded[nameClaim] ?? decoded['unique_name'] ?? '').toString();
   }
 
   String _readError(http.Response response, String fallback) {

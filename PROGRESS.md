@@ -30,7 +30,7 @@
 - [x] UP9. Màn chi tiết sản phẩm (User) + nút "Xem chi tiết" ở Trang Admin
 - [x] UP10. Upload ảnh sản phẩm + dữ liệu mẫu
 - [x] UP11. Theme chung + định dạng giá + thiết kế lại Đăng nhập / Đăng ký
-- [ ] UP12. Trang User có thanh tab dưới (Trang chủ / Marketplace / Tài khoản) + tab Tài khoản
+- [x] UP12. Trang User có thanh tab dưới (Trang chủ / Marketplace / Tài khoản) + tab Tài khoản
 - [ ] UP13. Marketplace: lưới sản phẩm + tìm kiếm + lọc danh mục + sắp xếp
 - [ ] UP14. Home Screen: lời chào, ô tìm kiếm, danh mục, sản phẩm mới, còn hàng ít
 
@@ -627,3 +627,8 @@ Người dùng tự kiểm tra:
   Mới `lib/utils/format.dart` `formatPrice(num)` → `20.990.000 đ` (dùng ` ` trước "đ" để không bị xuống dòng tách riêng); dùng ở `admin_screen.dart`, `main_screen.dart`, `product_detail_screen.dart`. `ProductFormDialog` vẫn nhập số trơn.
   `LoginScreen`/`RegisterScreen`: chỉ viết lại `build` (Login bỏ AppBar, logo `Icons.shopping_bag` + "Smart Auth"; Register AppBar trống để có nút back, tiêu đề "Tạo tài khoản"; các ô có `prefixIcon`). Logic login/vân tay/OTP/SIM giữ nguyên.
   Đã test trên Xiaomi (login user/admin, gửi OTP, giá 3 màn). Màu M3 từ seed ra xanh hơi xám; muốn rực hơn thêm `dynamicSchemeVariant: DynamicSchemeVariant.fidelity`. TESTING 7i, README dòng UP11.
+- UP12 (xong): `MainScreen` thành khung tab (`NavigationBar` + `IndexedStack`, `_currentTab`), hàm `openMarketplace({query, categoryId})` gọi `_marketplaceKey.currentState?.applyFilter(...)` (`GlobalKey<MarketplaceScreenState>`).
+  Danh sách cũ chuyển nguyên sang `screens/marketplace_screen.dart` (`MarketplaceScreen`, state public `MarketplaceScreenState`): thêm `_query`/`_categoryId`, `applyFilter` (không tham số = bỏ lọc), `_filter` lọc theo tên chứa chuỗi + `categoryId`, AppBar nút "Bỏ lọc" khi đang lọc. Vẫn dạng `ListView` (UP13 đổi sang lưới).
+  Mới `screens/home_screen.dart` (`HomeScreen(onOpenMarketplace:)`, bản tạm: lời chào + nút "Xem Marketplace" — UP14 làm đầy đủ), `screens/account_screen.dart` (`AccountScreen`: avatar chữ cái đầu, tên + role từ token, ListTile tắt vân tay khi đã bật, Đăng xuất).
+  `AuthService.nameClaim` (`.../identity/claims/name`, fallback `unique_name`) + `getUsername(token)`. Tách hàm top-level `confirmLogout(context)` (`logout_button.dart`) và `confirmDisableBiometric(context)` → `bool` (`biometric_off_button.dart`); 2 nút AppBar giờ chỉ dùng ở Trang Admin.
+  `TESTING.md` mục 7j, README dòng UP12 + dòng giới thiệu màn hình. Người dùng đã test OK.

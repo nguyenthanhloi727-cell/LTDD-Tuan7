@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../models/product.dart';
-import '../services/product_service.dart';
-import '../services/session.dart';
-import '../widgets/biometric_off_button.dart';
-import '../widgets/logout_button.dart';
-import '../widgets/product_image.dart';
-import '../widgets/refresh_message.dart';
-import '../widgets/stock_text.dart';
-import '../utils/format.dart';
-import 'product_detail_screen.dart';
+import 'account_screen.dart';
+import 'home_screen.dart';
+import 'marketplace_screen.dart';
 
-// Trang User: danh sach san pham.
+// Trang User: khung chua 3 tab (Trang chu / Marketplace / Tai khoan).
+// IndexedStack giu nguyen trang thai tung tab -> doi tab khong tai lai.
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -20,95 +14,39 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final _productService = ProductService();
-  late Future<List<Product>> _futureProducts;
+  static const _marketplaceTab = 1;
 
-  @override
-  void initState() {
-    super.initState();
-    _futureProducts = _fetch();
-  }
+  int _currentTab = 0;
+  // GlobalKey de goi applyFilter cua tab Marketplace tu tab Trang chu.
+  final _marketplaceKey = GlobalKey<MarketplaceScreenState>();
 
-  // Goi API; 401 -> dang xuat ve LoginScreen, 403 -> bao "Khong co quyen".
-  Future<List<Product>> _fetch() async {
-    try {
-      return await _productService.getProducts();
-    } on ApiException catch (e) {
-      if (!mounted) rethrow;
-      if (e.statusCode == 401) {
-        await handleSessionExpired(context);
-      } else if (e.statusCode == 403) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Không có quyền')),
-        );
-      }
-      rethrow;
-    }
-  }
-
-  Future<void> _reload() async {
-    setState(() {
-      _futureProducts = _fetch();
-    });
-    try {
-      await _futureProducts;
-    } catch (_) {
-      // Loi da hien trong FutureBuilder.
-    }
+  // Chuyen sang tab Marketplace kem bo loc (UP14 dung khi bam danh muc / tim kiem).
+  void openMarketplace({String? query, int? categoryId}) {
+    setState(() => _currentTab = _marketplaceTab);
+    _marketplaceKey.currentState
+        ?.applyFilter(query: query, categoryId: categoryId);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Danh sách sản phẩm'),
-        actions: const [BiometricOffButton(), LogoutButton()],
+      body: IndexedStack(
+        index: _currentTab,
+        children: [
+          HomeScreen(onOpenMarketplace: openMarketplace),
+          MarketplaceScreen(key: _marketplaceKey),
+          const AccountScreen(),
+        ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _reload,
-        child: FutureBuilder<List<Product>>(
-          future: _futureProducts,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return RefreshMessage('${snapshot.error}');
-            }
-            final products = snapshot.data ?? [];
-            if (products.isEmpty) {
-              return const RefreshMessage('Chưa có sản phẩm');
-            }
-            return ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                final p = products[index];
-                return ListTile(
-                  leading: ProductImage(p.imageUrl),
-                  title: Text(p.name),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Danh mục: ${p.categoryName ?? 'Chưa phân loại'}'
-                        '${p.description == null ? '' : '\n${p.description}'}',
-                      ),
-                      StockText(p.quantity),
-                    ],
-                  ),
-                  trailing: Text(formatPrice(p.price)),
-                  // UP9: bam vao san pham -> xem chi tiet
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => ProductDetailScreen(product: p)),
-                  ),
-                );
-              },
-            );
-          },
-        ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentTab,
+        onDestinationSelected: (index) => setState(() => _currentTab = index),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.home), label: 'Trang chủ'),
+          NavigationDestination(
+              icon: Icon(Icons.storefront), label: 'Marketplace'),
+          NavigationDestination(icon: Icon(Icons.person), label: 'Tài khoản'),
+        ],
       ),
     );
   }
