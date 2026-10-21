@@ -11,7 +11,7 @@
 - [x] P1. Backend: Identity + JWT + Role
 - [x] P2. Flutter: dotenv + jwt_decoder + đăng nhập/đăng ký + tự đăng nhập
 - [x] BT1. Đăng xuất
-- [ ] BT2. Đăng nhập đúng giao diện theo role
+- [x] BT2. Đăng nhập đúng giao diện theo role
 - [ ] BT3. Mở lại app vào đúng trang theo role
 - [ ] BT4. Phân quyền API danh sách sản phẩm
 - [ ] BT6+8. Category + Product.CategoryId nullable + xóa danh mục thì set null
@@ -272,3 +272,7 @@ Người dùng tự kiểm tra (demo cho thầy):
   Mới `mobile/lib/widgets/logout_button.dart`: `LogoutButton` (IconButton) → dialog xác nhận → `logout()` → `Navigator.pushAndRemoveUntil(..., (route) => false)` về `LoginScreen`.
   `MainScreen` AppBar thêm `actions: const [LogoutButton()]`.
   Cho BT2: trang Admin chưa có → khi tạo nhớ gắn `actions: const [LogoutButton()]` vào AppBar.
+- BT2 (xong): `AuthService.getRole(token)` đổi sang trả `String` ("Admin"/"User"): đọc `roleClaim` hoặc `'role'`, chuỗi hay List đều được, có "Admin" thì là Admin. Có `debugPrint('JWT payload: ...')` kèm `// TODO xoa truoc khi nop` (FINAL nhớ xóa).
+  Mới `mobile/lib/screens/admin_screen.dart`: `AdminScreen` (AppBar "Trang Admin" + `LogoutButton`, body lời chào) → BT7 thêm quản lý danh mục vào đây.
+  `LoginScreen._login`: login ok → `getToken()` → `getRole` → Admin `pushReplacement` `AdminScreen`, còn lại `MainScreen`.
+  Cho BT3: `main.dart` vẫn dùng `MyApp(isLoggedIn)` chỉ chọn `MainScreen`/`LoginScreen`, chưa rẽ theo role. Tài khoản Admin tạo qua Swagger (`"role": "Admin"`), app đăng ký luôn gửi role User.
