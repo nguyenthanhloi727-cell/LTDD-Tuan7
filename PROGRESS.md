@@ -10,7 +10,7 @@
 - [x] P0. Khởi tạo git + đẩy code tuần 6
 - [x] P1. Backend: Identity + JWT + Role
 - [x] P2. Flutter: dotenv + jwt_decoder + đăng nhập/đăng ký + tự đăng nhập
-- [ ] BT1. Đăng xuất
+- [x] BT1. Đăng xuất
 - [ ] BT2. Đăng nhập đúng giao diện theo role
 - [ ] BT3. Mở lại app vào đúng trang theo role
 - [ ] BT4. Phân quyền API danh sách sản phẩm
@@ -268,3 +268,7 @@ Người dùng tự kiểm tra (demo cho thầy):
   `services/auth_service.dart`: `login`, `register` (trả null nếu ok, ngược lại chuỗi lỗi), `saveToken`/`getToken`/`logout` (key prefs `'token'`), `getValidToken`, `getRole(token)` đọc claim `http://schemas.microsoft.com/ws/2008/06/identity/claims/role`.
   `screens/login_screen.dart`, `screens/register_screen.dart` mới; `test/widget_test.dart` sửa theo `MyApp(isLoggedIn: false)`.
   Cho BT1/BT2: `MainScreen` chưa có nút đăng xuất; login hiện luôn vào `MainScreen`, chưa rẽ theo role. Máy này không có Python, sửa file bằng Edit.
+- BT1 (xong): `AuthService.logout()` có sẵn (xóa key `'token'`), không sửa.
+  Mới `mobile/lib/widgets/logout_button.dart`: `LogoutButton` (IconButton) → dialog xác nhận → `logout()` → `Navigator.pushAndRemoveUntil(..., (route) => false)` về `LoginScreen`.
+  `MainScreen` AppBar thêm `actions: const [LogoutButton()]`.
+  Cho BT2: trang Admin chưa có → khi tạo nhớ gắn `actions: const [LogoutButton()]` vào AppBar.
