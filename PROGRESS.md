@@ -19,6 +19,10 @@
 - [x] BIO. Đăng nhập nhanh bằng vân tay với biometric_storage
 - [x] BT5. smart_auth (điểm cộng)
 - [x] FINAL. README + soát repo + tag nộp bài
+- [ ] UP1. Chỉ 1 tài khoản Admin + Admin quản lý (khóa/mở khóa) tài khoản
+- [ ] UP2. Token: tự đăng xuất khi hết hạn/bị thu hồi + nút thu hồi token
+- [ ] UP3. Số lượng + "Hết hàng" + chặn số âm + email không trùng + lỗi danh mục không tồn tại
+- [ ] UP4. Kéo xuống để tải lại + dispose TextEditingController
 
 ---
 
@@ -247,6 +251,105 @@ Người dùng tự kiểm tra (demo cho thầy):
 - [ ] Admin thêm/sửa/xóa danh mục; xóa danh mục thì sản phẩm thành "Chưa phân loại"
 - [ ] Đăng nhập bằng vân tay vào đúng trang theo role
 - [ ] (Cộng) smart_auth chạy được
+
+---
+
+### UP1. Chỉ 1 tài khoản Admin + Admin quản lý (khóa/mở khóa) tài khoản
+
+Lỗi gốc: `POST /api/Authenticate/register` nhận `role` từ body → ai cũng tự đăng ký thành Admin, role lạ (vd "SuperBoss") cũng được tạo.
+
+Backend:
+1. `appsettings.json` thêm mục `AdminAccount` (`Username`, `Email`, `Password`) — giá trị test, ví dụ `admin` / `admin@test.com` / `Admin@123`.
+2. `Program.cs` (đoạn seed role có sẵn): nếu chưa có user nào thuộc role Admin thì tạo tài khoản từ `AdminAccount` và gán role Admin. Đã có Admin thì không làm gì.
+3. `AuthenticateController.Register`: luôn gán role `User`, bỏ thuộc tính `Role` khỏi `RegisterModel`. Không tạo role mới trong register nữa.
+4. `Login`: user đang bị khóa (`IsLockedOutAsync`) → 401 `"Tài khoản đã bị khóa"`.
+5. Mới `Controllers/UsersController.cs` `[Authorize(Roles = "Admin")]`:
+   - `GET /api/Users`: danh sách `{ id, username, email, phoneNumber, role, isLocked }`.
+   - `POST /api/Users/{id}/lock` và `/unlock`: khóa vĩnh viễn (`SetLockoutEnabledAsync(true)` + `SetLockoutEndDateAsync(DateTimeOffset.MaxValue)`) / mở khóa. Không cho khóa tài khoản Admin (400).
+   - Không có API nâng ai lên Admin.
+
+Mobile:
+6. `ConfigUrl.users`; mới `models/app_user.dart`, `services/user_service.dart` (`getUsers`, `lock(id)`, `unlock(id)`, header Bearer + `ApiException` như `CategoryService`).
+7. Mới `screens/user_management_screen.dart`: danh sách tài khoản (tên, email, role, trạng thái "Đang khóa"), nút khóa/mở khóa có dialog xác nhận; dòng Admin không có nút.
+8. `AdminScreen` AppBar thêm `IconButton(Icons.people, tooltip: 'Quản lý tài khoản')` mở màn trên.
+9. Cập nhật `README.md` + `TESTING.md`: bỏ hướng dẫn đăng ký Admin qua Swagger, dùng tài khoản Admin seed sẵn; thêm mục test khóa tài khoản.
+
+Lưu ý: DB máy dev có thể đã có nhiều Admin tạo trước đó qua Swagger → báo người dùng, không tự xóa.
+Khóa tài khoản chỉ chặn đăng nhập mới; token đang dùng bị vô hiệu ở UP2.
+
+Commit: `feat: chi 1 tai khoan Admin + quan ly tai khoan` — add: `backend/ mobile/ README.md TESTING.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Chạy backend với DB trống → đăng nhập được `admin` / `Admin@123` vào Trang Admin
+- [ ] Swagger register gửi `"role": "Admin"` → tài khoản tạo ra vẫn là User
+- [ ] Admin → Quản lý tài khoản: thấy danh sách, khóa 1 user → user đó đăng nhập báo "Tài khoản đã bị khóa"; mở khóa → đăng nhập lại được
+- [ ] Dòng Admin không có nút khóa; User gọi `GET /api/Users` → 403
+
+---
+
+### UP2. Token: tự đăng xuất khi hết hạn/bị thu hồi + nút thu hồi token
+
+Backend:
+1. `Login`: thêm claim `"stamp"` = `await _userManager.GetSecurityStampAsync(user)`.
+2. `Program.cs` `AddJwtBearer` thêm `Events.OnTokenValidated`: tìm user theo claim name; không thấy, đang bị khóa, hoặc `stamp` khác SecurityStamp trong DB → `context.Fail(...)` → 401.
+3. `UsersController`:
+   - `POST /api/Users/{id}/revoke` (Admin): `UpdateSecurityStampAsync(user)` → mọi token cũ của user đó thành 401 ("Buộc đăng xuất").
+   - `lock` (UP1) gọi thêm `UpdateSecurityStampAsync` để khóa là bị đá ra ngay.
+   - `POST /api/Users/me/revoke` (`[Authorize]`, ai cũng gọi được cho chính mình): dùng cho nút demo làm hết hạn token của mình.
+
+Mobile:
+4. Mới `services/session.dart`: hàm `handleSessionExpired(BuildContext context)` = `AuthService().logout()` + SnackBar "Phiên đăng nhập hết hạn, hãy đăng nhập lại" + `pushAndRemoveUntil` về `LoginScreen`.
+5. `_headers()` của các service: dùng `getValidToken()`; token đã hết hạn theo `exp` → ném `ApiException(401, ...)` luôn, không gọi API.
+6. Mọi chỗ gọi API bắt `ApiException` 401 → `handleSessionExpired`: `MainScreen` (thay code cũ), `AdminScreen`, `CategoryScreen`, `UserManagementScreen`.
+7. `UserService.revoke(id)`, `revokeMe()`. `UserManagementScreen`: thêm nút "Buộc đăng xuất" mỗi user (trừ Admin). `AdminScreen` AppBar thêm nút `Icons.timer_off` tooltip "Làm hết hạn token (demo)" → dialog xác nhận → `revokeMe()` → tải lại → 401 → về màn Đăng nhập.
+8. Cập nhật `TESTING.md`: mục test buộc đăng xuất + nút demo.
+
+Lưu ý: vân tay vẫn đăng nhập lại được sau khi bị thu hồi (vì gọi login lấy token mới), trừ khi tài khoản bị khóa.
+
+Commit: `feat: tu dang xuat khi token het han + thu hoi token` — add: `backend/ mobile/ TESTING.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Admin bấm "Làm hết hạn token (demo)" → app về màn Đăng nhập, có SnackBar
+- [ ] Điện thoại đăng nhập `user`; Admin (Swagger hoặc máy khác) bấm "Buộc đăng xuất" user đó → user kéo tải lại → về màn Đăng nhập
+- [ ] Admin khóa user đang đăng nhập → user tải lại → về màn Đăng nhập, đăng nhập lại báo bị khóa
+- [ ] Token cũ (copy trước khi thu hồi) gọi Swagger → 401
+
+---
+
+### UP3. Số lượng + "Hết hàng" + chặn số âm + email không trùng + lỗi danh mục không tồn tại
+
+Backend:
+1. `Product` thêm `int Quantity` (mặc định 0) `[Range(0, int.MaxValue)]`; `Price` thêm `[Range(0, double.MaxValue)]`. `ProductDto` + `ToDto` thêm `Quantity`. Migration `AddQuantity` + `dotnet ef database update`.
+2. `ProductsController` POST/PUT: có `CategoryId` mà không tồn tại → 400 `"Danh mục không tồn tại"` (thay cho 500).
+3. `Program.cs` `AddIdentity(options => options.User.RequireUniqueEmail = true)`. Register trả lỗi trùng email dễ đọc (`DuplicateEmail` → "Email đã được sử dụng"). Email trùng có sẵn trong DB không bị xóa.
+
+Mobile:
+4. `Product` thêm `quantity` (thiếu thì 0). `MainScreen` + `AdminScreen`: `quantity == 0` → chữ đỏ "Hết hàng", ngược lại "Còn: n".
+5. `AdminScreen`: dialog bấm sản phẩm đổi thành form sửa đầy đủ (Tên, Giá, Số lượng, Danh mục); thêm FAB "Thêm sản phẩm" dùng chung form (`ProductService.createProduct`). Ô Giá/Số lượng dùng `keyboardType: TextInputType.number` + `FilteringTextInputFormatter.digitsOnly` (không gõ được dấu `-`) + validator bắt buộc nhập.
+6. `RegisterScreen` hiện được lỗi email trùng (đã đi qua `_readError`).
+7. Cập nhật `TESTING.md`.
+
+Commit: `feat: so luong + het hang + chan so am + email khong trung` — add: `backend/ mobile/ TESTING.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Admin thêm sản phẩm: ô giá/số lượng không gõ được dấu `-`; số lượng 0 → User thấy "Hết hàng"
+- [ ] Swagger POST `price: -5` hoặc `quantity: -1` → 400
+- [ ] Swagger POST `categoryId: 999999` → 400 "Danh mục không tồn tại"
+- [ ] Đăng ký trùng email → báo "Email đã được sử dụng"
+
+---
+
+### UP4. Kéo xuống để tải lại + dispose TextEditingController
+
+1. `MainScreen`, `AdminScreen`, `CategoryScreen`, `UserManagementScreen`: `RefreshIndicator` bọc cả lúc lỗi và lúc danh sách rỗng (dùng `ListView` + `AlwaysScrollableScrollPhysics` để kéo được).
+2. `CategoryScreen._askName`: `controller.dispose()` sau khi dialog đóng (`try/finally` quanh `await showDialog`). Các form dialog của UP3 cũng dispose controller tương tự.
+3. Cập nhật `TESTING.md` (thêm thao tác kéo để tải lại).
+
+Commit: `fix: keo de tai lai + dispose controller` — add: `mobile/ TESTING.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Tắt backend → app báo lỗi → bật lại backend → kéo xuống là tải được
+- [ ] Danh sách rỗng vẫn kéo xuống được; Trang Admin, Quản lý danh mục, Quản lý tài khoản đều kéo được
 
 ---
 
