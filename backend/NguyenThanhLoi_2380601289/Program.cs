@@ -22,7 +22,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // Identity: quan ly User va Role
-builder.Services.AddIdentity<User, IdentityRole>()
+// RequireUniqueEmail: 2 tai khoan khong duoc trung email (loi DuplicateEmail)
+builder.Services.AddIdentity<User, IdentityRole>(options => options.User.RequireUniqueEmail = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 

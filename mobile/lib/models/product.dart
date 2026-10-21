@@ -4,6 +4,7 @@ class Product {
   final double price;
   final String? description;
   final String? imageUrl;
+  final int quantity; // 0 = het hang
   final int? categoryId; // null = chua phan loai
   final String? categoryName;
 
@@ -13,6 +14,7 @@ class Product {
     required this.price,
     this.description,
     this.imageUrl,
+    this.quantity = 0,
     this.categoryId,
     this.categoryName,
   });
@@ -24,6 +26,7 @@ class Product {
       price: (json['price'] as num).toDouble(),
       description: json['description'] as String?,
       imageUrl: json['imageUrl'] as String?,
+      quantity: (json['quantity'] as int?) ?? 0,
       categoryId: json['categoryId'] as int?,
       categoryName: json['categoryName'] as String?,
     );
@@ -35,6 +38,7 @@ class Product {
         'price': price,
         'description': description,
         'imageUrl': imageUrl,
+        'quantity': quantity,
         'categoryId': categoryId,
       };
 }

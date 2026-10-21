@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NguyenThanhLoi_2380601289.Models;
 
@@ -32,6 +33,13 @@ namespace NguyenThanhLoi_2380601289.Controllers
             if (userExists != null)
                 return BadRequest(new { message = "Tên đăng nhập đã tồn tại" });
 
+            // Kiem truoc bang AnyAsync: DB cu co the da co 2 tai khoan trung email
+            // (FindByEmailAsync gap 2 dong se loi 500), du lieu cu giu nguyen, chi chan tao moi.
+            var normalizedEmail = _userManager.NormalizeEmail(model.Email);
+            if (!string.IsNullOrEmpty(normalizedEmail)
+                && await _userManager.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail))
+                return BadRequest(new { message = "Email đã được sử dụng" });
+
             var user = new User
             {
                 UserName = model.Username,
@@ -43,7 +51,15 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
-                return BadRequest(new { message = "Tạo tài khoản thất bại", errors = result.Errors });
+                return BadRequest(new
+                {
+                    message = "Tạo tài khoản thất bại",
+                    errors = result.Errors.Select(e => new
+                    {
+                        code = e.Code,
+                        description = e.Code == "DuplicateEmail" ? "Email đã được sử dụng" : e.Description
+                    })
+                });
 
             // Dang ky luon la User; tai khoan Admin duy nhat duoc tao san luc khoi dong (Program.cs)
             await _userManager.AddToRoleAsync(user, "User");

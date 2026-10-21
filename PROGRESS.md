@@ -21,7 +21,7 @@
 - [x] FINAL. README + soát repo + tag nộp bài
 - [x] UP1. Chỉ 1 tài khoản Admin + Admin quản lý (khóa/mở khóa) tài khoản
 - [x] UP2. Token: tự đăng xuất khi hết hạn/bị thu hồi + nút thu hồi token
-- [ ] UP3. Số lượng + "Hết hàng" + chặn số âm + email không trùng + lỗi danh mục không tồn tại
+- [x] UP3. Số lượng + "Hết hàng" + chặn số âm + email không trùng + lỗi danh mục không tồn tại
 - [ ] UP4. Kéo xuống để tải lại + dispose TextEditingController
 
 ---
@@ -418,3 +418,8 @@ Người dùng tự kiểm tra:
   Mobile: mới `services/session.dart` (`isSessionExpired(e)`, `handleSessionExpired(context)` = logout + SnackBar + về `LoginScreen`). `_headers()` 3 service dùng `getValidToken()`, hết `exp` → ném `ApiException(401)` không gọi API.
   Main/Admin/Category/UserManagement: `_fetch()` bắt 401 → `handleSessionExpired`. `UserService.revoke(id)`, `revokeMe()`; `UserManagementScreen` nút `Icons.logout` "Buộc đăng xuất"; `AdminScreen` nút `Icons.timer_off` "Làm hết hạn token (demo)". `TESTING.md` mục 7c.
   Lưu ý: DB máy này Admin là `testadmin` (Test@123), không phải `admin` trong appsettings. Đã test thật trên Xiaomi 4 kịch bản OK. Pull-to-refresh chỉ có khi danh sách không rỗng (UP4).
+- UP3 (xong): `Product` thêm `int Quantity` (mặc định 0) + `[Range]` cho `Price`/`Quantity` (ASP.NET tự trả 400 dạng `errors: { Price: [...] }`); `ProductDto`/`ToDto` thêm `Quantity`. Migration `AddQuantity` đã database update.
+  `ProductsController`: hàm `CategoryExists(int?)` dùng ở POST/PUT → 400 `{ message: "Danh mục không tồn tại" }`. `Program.cs` `AddIdentity(options => options.User.RequireUniqueEmail = true)`.
+  `AuthenticateController.Register`: kiểm trước bằng `Users.AnyAsync(NormalizedEmail)` (không dùng `FindByEmailAsync` vì DB cũ có thể trùng email → lỗi 500) → 400 "Email đã được sử dụng"; lỗi Identity map `DuplicateEmail` sang tiếng Việt.
+  Mobile: `Product.quantity` (thiếu → 0); mới `widgets/stock_text.dart` (`StockText`: 0 → đỏ "Hết hàng", còn lại "Còn: n") dùng ở Main + Admin; mới `widgets/product_form_dialog.dart` (`ProductFormDialog` tự dispose controller, `digitsOnly`, pop ra `Product`). `AdminScreen._chooseCategory` → `_openForm([Product? p])` + FAB "Thêm sản phẩm"; `ProductService.createProduct` + `_readMessage` đọc lỗi 400.
+  Đã test thật trên Xiaomi + curl, `TESTING.md` mục 7d. Cho UP4: `MainScreen` đã có `RefreshIndicator` (chỉ khi danh sách không rỗng), `AdminScreen` chưa có; dialog cũ ở CategoryScreen/LoginScreen… chưa soát dispose.
