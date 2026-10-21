@@ -53,6 +53,8 @@ Thêm: **đăng nhập nhanh bằng vân tay** (`biometric_storage`) — đăng 
    flutter run
    ```
 
+Quy trình test chi tiết từng bài: [TESTING.md](TESTING.md).
+
 ## Tài khoản test
 
 Database mới là trống, cần tạo 2 tài khoản qua Swagger `POST /api/Authenticate/register`:
