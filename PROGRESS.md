@@ -24,6 +24,7 @@
 - [x] UP3. Số lượng + "Hết hàng" + chặn số âm + email không trùng + lỗi danh mục không tồn tại
 - [x] UP4. Kéo xuống để tải lại + dispose TextEditingController
 - [x] UP5. Đăng ký bắt buộc OTP qua SMS (smart_auth SMS User Consent tự điền mã)
+- [x] UP6. Nút "Gửi mã" tự gửi SMS giả lập vào máy ảo (backend gọi `adb emu sms send`)
 
 ---
 
@@ -371,6 +372,22 @@ Người dùng tự kiểm tra:
 
 ---
 
+### UP6. Nút "Gửi mã" tự gửi SMS giả lập vào máy ảo (backend gọi `adb emu sms send`)
+
+Backend chạy cùng máy với emulator nên tự gọi adb, khỏi copy lệnh trong log.
+
+1. Backend: mới `Services/SmsSimulator.cs`: tìm `adb.exe` (`SmsSimulator:AdbPath` → `ANDROID_HOME` / `ANDROID_SDK_ROOT` → `%LOCALAPPDATA%\Android\Sdk` → `adb` trong PATH), lấy máy ảo đầu tiên trong `adb devices` (`emulator-xxxx`), chạy `adb -s <máy ảo> emu sms send <sđt> "<nội dung>"` sau 1,5 giây (chạy nền). Không có adb / máy ảo → chỉ ghi log, vẫn nhập tay được. `OtpService.Send` gọi nó. `appsettings.json` mục `SmsSimulator` (`Enabled`, `AdbPath`).
+2. Mobile: `RegisterScreen._sendOtp` bắt đầu chờ SMS (smart_auth) **trước** khi gọi API, vì User Consent chỉ bắt SMS đến sau lúc bắt đầu chờ.
+3. Cập nhật `TESTING.md` mục 7f, `README.md`.
+
+Commit: `feat: gui ma OTP tu dong vao may ao bang adb` — add: `backend/ mobile/ README.md TESTING.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Máy ảo + backend cùng máy: Đăng ký → nhập SĐT → "Gửi mã" → vài giây sau hiện hộp "Cho phép đọc tin nhắn" (không cần gõ lệnh) → Cho phép → ô OTP tự điền → Đăng ký thành công
+- [ ] Điện thoại thật (không có máy ảo): "Gửi mã" vẫn báo đã gửi, log backend ghi không thấy máy ảo + mã OTP để gõ tay
+
+---
+
 ## 3. Nhật ký bàn giao
 
 > Mỗi bước ghi 3–5 dòng ngay dưới đây, mới nhất ở dưới cùng. Phiên sau đọc mục này thay vì quét lại code.
@@ -449,3 +466,7 @@ Người dùng tự kiểm tra:
   `AuthenticateController`: mới `POST send-otp` (`SendOtpModel.PhoneNumber`; SĐT sai/đã dùng → 400, gửi lại sớm → 429); `Register` bắt buộc `PhoneNumber` + `Otp` (`RegisterModel.Otp`), SĐT trùng → 400, lưu SĐT đã chuẩn hóa + `PhoneNumberConfirmed = true`.
   Mobile: `ConfigUrl.sendOtp`; `AuthService.sendOtp(phone)`, `register(..., {required phoneNumber, required otp})` (bỏ key `role`). `RegisterScreen`: `_otpController`, nút "Gửi mã" → `_sendOtp` → `_waitForOtpSms` (`SmartAuth.instance.getSmsWithUserConsentApi(matcher: r'\d{6}')`), `dispose` gọi `removeUserConsentApiListener` nếu đang chờ.
   README/TESTING: Swagger register phải `send-otp` trước (mã xem log backend); TESTING mục 7f. Tự điền mã qua SMS chưa test trên máy này (không có emulator); DB máy này thêm user test `otp7325`, `app2802`.
+- UP6 (xong): mới `Services/SmsSimulator.cs` (Singleton): `SendInBackground(phone, message)` chạy nền sau 1,5s → `FindAdb()` (`SmsSimulator:AdbPath` → `ANDROID_HOME`/`ANDROID_SDK_ROOT` → `%LOCALAPPDATA%\Android\Sdk\platform-tools` → PATH) → máy ảo đầu tiên `emulator-xxxx` trong `adb devices` → `adb -s <máy ảo> emu sms send <sđt> "Ma OTP dang ky cua ban la <mã>"`; lỗi / không có máy ảo chỉ ghi log `[SMS gia lap]`.
+  `OtpService` inject `SmsSimulator`, `Send` gọi `_sms.SendInBackground` sau khi in log `[OTP]`. `Program.cs` `AddSingleton<SmsSimulator>()`; `appsettings.json` mục `SmsSimulator` (`Enabled: true`, `AdbPath: ""`).
+  Mobile: `RegisterScreen._sendOtp` gọi `_waitForOtpSms()` TRƯỚC khi gọi API (User Consent chỉ bắt SMS đến sau lúc bắt đầu chờ).
+  Đã test: API trả về ngay, máy chỉ có điện thoại thật → log "Khong thay may ao". Nhánh gửi SMS thật vào máy ảo chưa test trên máy này (không có emulator).

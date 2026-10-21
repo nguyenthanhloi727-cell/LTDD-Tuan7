@@ -15,11 +15,13 @@ namespace NguyenThanhLoi_2380601289.Services
 
         private readonly IMemoryCache _cache;
         private readonly ILogger<OtpService> _logger;
+        private readonly SmsSimulator _sms;
 
-        public OtpService(IMemoryCache cache, ILogger<OtpService> logger)
+        public OtpService(IMemoryCache cache, ILogger<OtpService> logger, SmsSimulator sms)
         {
             _cache = cache;
             _logger = logger;
+            _sms = sms;
         }
 
         private class OtpEntry
@@ -52,9 +54,11 @@ namespace NguyenThanhLoi_2380601289.Services
             var code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
             _cache.Set(Key(phone), new OtpEntry { Code = code, SentAt = DateTime.UtcNow }, Lifetime);
 
-            // "Gui SMS": in ra log kem san lenh gia lap cho may ao Android
-            _logger.LogWarning("[OTP] {Phone}: {Code} | Gia lap gui SMS: adb emu sms send {Phone} \"Ma OTP dang ky cua ban la {Code}\"",
-                phone, code, phone, code);
+            // "Gui SMS": in ra log (de go tay khi dung dien thoai that) + tu gui SMS vao may ao (UP6)
+            var message = $"Ma OTP dang ky cua ban la {code}";
+            _logger.LogWarning("[OTP] {Phone}: {Code} | Gia lap gui SMS: adb emu sms send {Phone} \"{Message}\"",
+                phone, code, phone, message);
+            _sms.SendInBackground(phone, message);
             return 0;
         }
 

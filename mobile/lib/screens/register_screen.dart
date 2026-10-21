@@ -58,6 +58,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    // UP6: bat dau cho SMS TRUOC khi goi API - User Consent chi bat tin den sau luc bat dau cho,
+    // ma backend gui SMS vao may ao ngay sau khi tao ma (khong await: cho chay song song).
+    if (Platform.isAndroid) _waitForOtpSms();
+
     setState(() => _sendingOtp = true);
     String? error;
     try {
@@ -73,7 +77,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
     _showMessage('Đã gửi mã OTP, mã có hiệu lực 5 phút');
-    if (Platform.isAndroid) _waitForOtpSms();
   }
 
   // smart_auth - SMS User Consent API: co SMS chua ma toi thi Android hoi
