@@ -177,21 +177,23 @@ Trang User, Trang Admin, Quản lý danh mục, Quản lý tài khoản đều c
 | 7e.3 | Màn có danh sách rỗng (vd. xóa hết danh mục) → kéo xuống | Hiện vòng xoay tải lại, không bị kẹt |
 | 7e.4 | Quản lý danh mục → mở dialog Thêm/Sửa nhiều lần, Hủy/Lưu | Không có lỗi "used after being disposed" trong log |
 
-## 7f. Đăng ký bằng mã OTP qua SMS (UP5, smart_auth)
+## 7f. Đăng ký bằng mã OTP qua SMS (UP5 + UP6, smart_auth)
 
-Không thuê dịch vụ SMS: backend tạo mã 6 số (hạn 5 phút) và in ra log dạng
-`[OTP] 0900000003: 123456 | Gia lap gui SMS: adb emu sms send 0900000003 "Ma OTP dang ky cua ban la 123456"`.
-Người test tự "gửi SMS" bằng lệnh đó (máy ảo), app dùng smart_auth (SMS User Consent API) đọc tin và tự điền mã.
+Không thuê dịch vụ SMS: backend tạo mã 6 số (hạn 5 phút), in ra log dạng
+`[OTP] 0900000003: 123456 | Gia lap gui SMS: adb emu sms send 0900000003 "Ma OTP dang ky cua ban la 123456"`
+và **tự chạy lệnh đó** (UP6) vào máy ảo đang mở trên cùng máy tính → máy ảo nhận SMS như thật,
+app dùng smart_auth (SMS User Consent API) đọc tin và tự điền mã.
+Backend tìm `adb.exe` theo `SmsSimulator:AdbPath` (appsettings.json) → `ANDROID_HOME` → `%LOCALAPPDATA%\Android\Sdk\platform-tools` → PATH.
 
 | # | Làm gì | Kết quả đúng |
 |---|--------|--------------|
-| 7f.1 | **Máy ảo**: màn Đăng ký → điền thông tin + SĐT `0900000003` → bấm **Gửi mã** | SnackBar "Đã gửi mã OTP..."; log backend có dòng `[OTP]` |
-| 7f.2 | Copy lệnh `adb emu sms send ...` trong log, chạy ở Terminal (hoặc emulator ⋯ → Phone → gửi SMS cùng nội dung) | Hiện hộp **"Cho phép ... đọc tin nhắn"** |
+| 7f.1 | **Máy ảo** (backend chạy cùng máy): màn Đăng ký → điền thông tin + SĐT `0900000003` → bấm **Gửi mã** | SnackBar "Đã gửi mã OTP..."; log backend có dòng `[OTP]` rồi `[SMS gia lap] Da gui SMS ...` |
+| 7f.2 | Chờ 2–3 giây (không gõ lệnh gì) | Hiện hộp **"Cho phép ... đọc tin nhắn"**. Không hiện → xem log `[SMS gia lap]`; vẫn gửi tay được bằng lệnh trong log hoặc emulator ⋯ → Phone |
 | 7f.3 | Bấm **Cho phép** | Ô "Mã OTP" tự điền 6 số, SnackBar "Đã tự điền mã OTP từ SMS" → bấm Đăng ký → thành công |
 | 7f.4 | Bấm **Gửi mã** lần nữa ngay sau đó | Báo "Vui lòng đợi ... giây rồi gửi lại mã" |
 | 7f.5 | Nhập mã sai → Đăng ký | Báo "Mã OTP không đúng hoặc đã hết hạn", không tạo tài khoản |
 | 7f.6 | Đăng ký tài khoản khác bằng SĐT đã dùng | Bấm Gửi mã → "Số điện thoại đã được sử dụng" |
-| 7f.7 | **Điện thoại thật**: lấy mã trong log backend, gõ tay vào ô OTP (hoặc nhờ máy khác nhắn tin chứa mã tới số mình — người gửi không nằm trong danh bạ) | Đăng ký thành công |
+| 7f.7 | **Điện thoại thật** (log backend ghi "Khong thay may ao Android"): lấy mã trong log backend, gõ tay vào ô OTP (hoặc nhờ máy khác nhắn tin chứa mã tới số mình — người gửi không nằm trong danh bạ) | Đăng ký thành công |
 
 ## 8. Kiểm tra code trước khi nộp
 

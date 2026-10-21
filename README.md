@@ -64,7 +64,7 @@ Quy trình test chi tiết từng bài: [TESTING.md](TESTING.md).
 ## Tài khoản test
 
 - **Admin** (tạo sẵn khi chạy backend lần đầu): `admin` / `Admin@123`. Hệ thống chỉ có 1 Admin, không có cách đăng ký hay nâng quyền lên Admin.
-- **User**: đăng ký trong app (cần mã OTP, xem bên dưới), hoặc Swagger: gọi `POST /api/Authenticate/send-otp` `{ "phoneNumber": "0900000001" }`, lấy mã 6 số trong log backend, rồi `POST /api/Authenticate/register`:
+- **User**: đăng ký trong app (cần mã OTP: chạy máy ảo cùng máy với backend thì backend tự gửi SMS chứa mã vào máy ảo bằng `adb`, app tự điền; điện thoại thật thì gõ mã trong log backend — xem TESTING mục 7f), hoặc Swagger: gọi `POST /api/Authenticate/send-otp` `{ "phoneNumber": "0900000001" }`, lấy mã 6 số trong log backend, rồi `POST /api/Authenticate/register`:
   `{ "username": "user", "email": "user@test.com", "password": "User@123", "initials": "US", "phoneNumber": "0900000001", "otp": "<mã>" }`
   (gửi thêm `"role": "Admin"` cũng bị bỏ qua, tài khoản vẫn là `User`).
 

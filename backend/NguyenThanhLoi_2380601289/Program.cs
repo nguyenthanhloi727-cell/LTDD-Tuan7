@@ -30,6 +30,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options => options.User.Require
 
 // OTP dang ky (UP5): luu ma trong bo nho, Singleton de cac request dung chung
 builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<SmsSimulator>(); // UP6: tu gui SMS vao may ao bang adb
 builder.Services.AddSingleton<OtpService>();
 
 // JWT: kiem tra token gui len trong header Authorization: Bearer <token>
