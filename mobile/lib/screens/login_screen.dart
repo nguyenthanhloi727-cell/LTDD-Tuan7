@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/auth_service.dart';
+import 'admin_screen.dart';
 import 'main_screen.dart';
 import 'register_screen.dart';
 
@@ -46,9 +47,16 @@ class _LoginScreenState extends State<LoginScreen> {
       _showMessage(error);
       return;
     }
+    // Doc role trong token vua luu: Admin -> AdminScreen, con lai -> MainScreen
+    final token = await _authService.getToken();
+    if (!mounted) return;
+    final role = token == null ? 'User' : _authService.getRole(token);
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const MainScreen()),
+      MaterialPageRoute(
+        builder: (_) =>
+            role == 'Admin' ? const AdminScreen() : const MainScreen(),
+      ),
     );
   }
 
