@@ -31,7 +31,7 @@
 - [x] UP10. Upload ảnh sản phẩm + dữ liệu mẫu
 - [x] UP11. Theme chung + định dạng giá + thiết kế lại Đăng nhập / Đăng ký
 - [x] UP12. Trang User có thanh tab dưới (Trang chủ / Marketplace / Tài khoản) + tab Tài khoản
-- [ ] UP13. Marketplace: lưới sản phẩm + tìm kiếm + lọc danh mục + sắp xếp
+- [x] UP13. Marketplace: lưới sản phẩm + tìm kiếm + lọc danh mục + sắp xếp
 - [ ] UP14. Home Screen: lời chào, ô tìm kiếm, danh mục, sản phẩm mới, còn hàng ít
 
 ---
@@ -632,3 +632,7 @@ Người dùng tự kiểm tra:
   Mới `screens/home_screen.dart` (`HomeScreen(onOpenMarketplace:)`, bản tạm: lời chào + nút "Xem Marketplace" — UP14 làm đầy đủ), `screens/account_screen.dart` (`AccountScreen`: avatar chữ cái đầu, tên + role từ token, ListTile tắt vân tay khi đã bật, Đăng xuất).
   `AuthService.nameClaim` (`.../identity/claims/name`, fallback `unique_name`) + `getUsername(token)`. Tách hàm top-level `confirmLogout(context)` (`logout_button.dart`) và `confirmDisableBiometric(context)` → `bool` (`biometric_off_button.dart`); 2 nút AppBar giờ chỉ dùng ở Trang Admin.
   `TESTING.md` mục 7j, README dòng UP12 + dòng giới thiệu màn hình. Người dùng đã test OK.
+- UP13 (xong): `MarketplaceScreen` đổi sang `CustomScrollView` (ô tìm `_searchController` → `_query`, hàng `ChoiceChip` `_categoryId` với `uncategorizedId = -1` = "Chưa phân loại", `SliverGrid` 2 cột `childAspectRatio 0.62`); `enum ProductSort` + `_sortLabels`, `PopupMenuButton` `Icons.sort` trên AppBar (bỏ nút "Bỏ lọc" cũ, thay bằng "Xóa bộ lọc" khi không có kết quả).
+  `_fetch()` tải sản phẩm rồi `CategoryService.getCategories()` vào `_categories` (kéo tải lại cả hai). `applyFilter({query, categoryId})` giữ nguyên chữ ký, giờ cũng điền `_searchController.text` → UP14 gọi qua `MainScreen.openMarketplace`.
+  Mới `widgets/product_card.dart` (`ProductCard(product:, onTap:)`: ảnh `Expanded` để không tràn, hết hàng `Opacity 0.5` + nhãn đỏ). `ProductImage` thêm tham số `fill` (rộng theo ô, bỏ bo góc), mặc định `false` nên chỗ cũ không đổi.
+  `utils/format.dart` thêm `removeDiacritics(text)` (chữ thường + bỏ dấu tiếng Việt), dùng cho tìm kiếm và sắp xếp tên — UP14 dùng lại được. TESTING 7k, README dòng UP13. Người dùng đã test OK.

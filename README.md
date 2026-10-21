@@ -39,6 +39,7 @@ Nâng cấp:
 | UP10 | Admin **upload ảnh** sản phẩm từ thư viện ảnh; dữ liệu mẫu có ảnh | `POST api/Products/upload-image`, `ProductFormDialog`, `Data/SampleData.cs` |
 | UP11 | Theme chung (xanh, ô nhập bo tròn), giá dạng `20.990.000 đ`, giao diện mới Đăng nhập / Đăng ký | `theme/app_theme.dart`, `utils/format.dart` (`formatPrice`) |
 | UP12 | Trang User có thanh tab dưới **Trang chủ / Marketplace / Tài khoản** (đổi tab không tải lại); tab Tài khoản hiện tên đăng nhập + role, tắt vân tay, đăng xuất | `MainScreen` (`NavigationBar` + `IndexedStack`), `MarketplaceScreen`, `HomeScreen`, `AccountScreen`, `AuthService.getUsername` |
+| UP13 | Marketplace dạng **lưới 2 cột**, tìm theo tên (không dấu, không phân biệt hoa thường), chip lọc danh mục / Chưa phân loại, sắp xếp Mới nhất / Giá / Tên; hết hàng thì ảnh mờ | `MarketplaceScreen`, `widgets/product_card.dart` (`ProductCard`), `utils/format.dart` (`removeDiacritics`) |
 
 Tài liệu API: [API.md](API.md). Kế hoạch + nhật ký từng bước: [PROGRESS.md](PROGRESS.md).
 

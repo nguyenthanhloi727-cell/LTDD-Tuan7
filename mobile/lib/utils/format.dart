@@ -11,3 +11,29 @@ String formatPrice(num price) {
   //  : khoang trang khong ngat dong, "đ" khong bi tach xuong dong rieng
   return '$sign$buffer đ';
 }
+
+// UP13: bo dau tieng Viet + chu thuong de tim kiem: "Chuột Không Dây" -> "chuot khong day".
+const _vietnameseGroups = {
+  'a': 'àáạảãâầấậẩẫăằắặẳẵ',
+  'e': 'èéẹẻẽêềếệểễ',
+  'i': 'ìíịỉĩ',
+  'o': 'òóọỏõôồốộổỗơờớợởỡ',
+  'u': 'ùúụủũưừứựửữ',
+  'y': 'ỳýỵỷỹ',
+  'd': 'đ',
+};
+
+String removeDiacritics(String text) {
+  final buffer = StringBuffer();
+  for (final ch in text.toLowerCase().split('')) {
+    var replaced = ch;
+    for (final entry in _vietnameseGroups.entries) {
+      if (entry.value.contains(ch)) {
+        replaced = entry.key;
+        break;
+      }
+    }
+    buffer.write(replaced);
+  }
+  return buffer.toString();
+}
