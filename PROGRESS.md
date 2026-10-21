@@ -12,7 +12,7 @@
 - [x] P2. Flutter: dotenv + jwt_decoder + đăng nhập/đăng ký + tự đăng nhập
 - [x] BT1. Đăng xuất
 - [x] BT2. Đăng nhập đúng giao diện theo role
-- [ ] BT3. Mở lại app vào đúng trang theo role
+- [x] BT3. Mở lại app vào đúng trang theo role
 - [ ] BT4. Phân quyền API danh sách sản phẩm
 - [ ] BT6+8. Category + Product.CategoryId nullable + xóa danh mục thì set null
 - [ ] BT7. Admin thêm/xóa/sửa danh mục
@@ -276,3 +276,6 @@ Người dùng tự kiểm tra (demo cho thầy):
   Mới `mobile/lib/screens/admin_screen.dart`: `AdminScreen` (AppBar "Trang Admin" + `LogoutButton`, body lời chào) → BT7 thêm quản lý danh mục vào đây.
   `LoginScreen._login`: login ok → `getToken()` → `getRole` → Admin `pushReplacement` `AdminScreen`, còn lại `MainScreen`.
   Cho BT3: `main.dart` vẫn dùng `MyApp(isLoggedIn)` chỉ chọn `MainScreen`/`LoginScreen`, chưa rẽ theo role. Tài khoản Admin tạo qua Swagger (`"role": "Admin"`), app đăng ký luôn gửi role User.
+- BT3 (xong): `main.dart` `main()`: có token → `getValidToken()`; còn hạn thì `role = getRole(token)`, hết hạn thì `logout()`; không có token → role null.
+  `MyApp` đổi tham số `isLoggedIn` → `String? role` (null → `LoginScreen`, "Admin" → `AdminScreen`, "User" → `MainScreen`). `test/widget_test.dart` sửa thành `MyApp(role: null)`.
+  `AuthService` không sửa. Cho BT4: backend chưa gắn `[Authorize]` cho `ProductsController`, `ProductService` chưa gửi header `Authorization: Bearer`.
