@@ -29,7 +29,7 @@
 - [x] UP8. Nút hiện/ẩn mật khẩu + ảnh sản phẩm + login/register trả `status`, `message` (giống bài mẫu)
 - [x] UP9. Màn chi tiết sản phẩm (User) + nút "Xem chi tiết" ở Trang Admin
 - [x] UP10. Upload ảnh sản phẩm + dữ liệu mẫu
-- [ ] UP11. Theme chung + định dạng giá + thiết kế lại Đăng nhập / Đăng ký
+- [x] UP11. Theme chung + định dạng giá + thiết kế lại Đăng nhập / Đăng ký
 - [ ] UP12. Trang User có thanh tab dưới (Trang chủ / Marketplace / Tài khoản) + tab Tài khoản
 - [ ] UP13. Marketplace: lưới sản phẩm + tìm kiếm + lọc danh mục + sắp xếp
 - [ ] UP14. Home Screen: lời chào, ô tìm kiếm, danh mục, sản phẩm mới, còn hàng ít
@@ -623,3 +623,7 @@ Người dùng tự kiểm tra:
 - UP10: `ProductsController.UploadImage` (`POST api/Products/upload-image`, Admin, `IFormFile file`, đuôi jpg/jpeg/png/webp/gif, ≤ 5 MB, tên `Guid` → `wwwroot/uploads/products`, trả `{ url }`); `Program.cs` `app.UseStaticFiles()` + `SampleData.SeedAsync` (mới `Data/SampleData.cs`: DB chưa có sản phẩm → 3 danh mục + 6 sản phẩm, ảnh `wwwroot/images/samples/*.png` vẽ bằng System.Drawing, có commit). `.gitignore` bỏ `wwwroot/uploads/`.
   Mobile: gói `image_picker: ^1.2.4` (không đổi version gói cũ); `ConfigUrl.uploadProductImage`; `ProductService.uploadImage(path)` (MultipartRequest, chỉ header Authorization); `ProductFormDialog._pickAndUpload` (maxWidth 1200, quality 85) + xem trước `ValueListenableBuilder` + `_uploading` khóa nút Lưu. iOS `NSPhotoLibraryUsageDescription`. API.md, TESTING 7h.
   Đã test trên Xiaomi + curl; seed test trên DB tạm rồi xóa. DB máy này đã thêm 3 danh mục + 6 sản phẩm mẫu qua API. Lưu ý: gửi JSON tiếng Việt bằng curl trong Git Bash bị lỗi dấu → dùng PowerShell + UTF-8. Xóa sản phẩm chưa xóa file ảnh upload.
+- UP11 (xong): mới `lib/theme/app_theme.dart` (`AppTheme.light()`: `ColorScheme.fromSeed(0xFF1877F2)`, ô nhập `filled` xám bo 12 không viền / viền primary khi focus, Elevated/Filled/Outlined button cao 50 bo 12, `CardThemeData`, AppBar trắng `centerTitle: false`); `main.dart` dùng `theme: AppTheme.light()`.
+  Mới `lib/utils/format.dart` `formatPrice(num)` → `20.990.000 đ` (dùng ` ` trước "đ" để không bị xuống dòng tách riêng); dùng ở `admin_screen.dart`, `main_screen.dart`, `product_detail_screen.dart`. `ProductFormDialog` vẫn nhập số trơn.
+  `LoginScreen`/`RegisterScreen`: chỉ viết lại `build` (Login bỏ AppBar, logo `Icons.shopping_bag` + "Smart Auth"; Register AppBar trống để có nút back, tiêu đề "Tạo tài khoản"; các ô có `prefixIcon`). Logic login/vân tay/OTP/SIM giữ nguyên.
+  Đã test trên Xiaomi (login user/admin, gửi OTP, giá 3 màn). Màu M3 từ seed ra xanh hơi xám; muốn rực hơn thêm `dynamicSchemeVariant: DynamicSchemeVariant.fidelity`. TESTING 7i, README dòng UP11.

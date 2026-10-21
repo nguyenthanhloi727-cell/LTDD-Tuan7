@@ -220,6 +220,16 @@ DB chưa có sản phẩm nào → backend tự tạo 3 danh mục + 6 sản ph�
 | 7h.8 | Ô Link ảnh dán link ngoài `https://...` hoặc xóa trống → Lưu | Hiện ảnh từ link / quay về icon túi |
 | 7h.9 | Swagger `upload-image` bằng token User | `403` |
 
+## 7i. Theme chung + định dạng giá + giao diện Đăng nhập / Đăng ký (UP11)
+
+| # | Thao tác | Kết quả mong đợi |
+|---|---|---|
+| 7i.1 | Mở app (chưa đăng nhập) | Màn Đăng nhập không có AppBar: logo túi tròn xanh, chữ **Smart Auth**, "Đăng nhập để tiếp tục"; ô nhập nền xám bo tròn có icon người / ổ khóa |
+| 7i.2 | Bấm vào ô nhập | Viền xanh khi focus; nút con mắt vẫn hiện/ẩn mật khẩu |
+| 7i.3 | Đăng nhập `user` / `admin` | Vào đúng trang theo role như cũ; máy đã bật vân tay thì có nút **Đăng nhập bằng vân tay** dưới nút Đăng nhập và vẫn dùng được |
+| 7i.4 | Bấm **Đăng ký** | Màn "Tạo tài khoản" có nút quay lại, các ô có icon (người, email, khóa, thẻ, điện thoại, tin nhắn); Gửi mã OTP + nút SIM + đăng ký chạy như 7f |
+| 7i.5 | Xem giá ở Trang User, Trang Admin, Chi tiết sản phẩm | Dạng `20.990.000 đ` (dấu chấm mỗi 3 số); ô nhập giá trong form sửa vẫn là số trơn |
+
 ## 8. Kiểm tra code trước khi nộp
 
 ```bash

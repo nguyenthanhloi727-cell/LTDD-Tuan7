@@ -12,6 +12,7 @@ import '../widgets/refresh_message.dart';
 import '../widgets/product_form_dialog.dart';
 import '../widgets/product_image.dart';
 import '../widgets/stock_text.dart';
+import '../utils/format.dart';
 import 'category_screen.dart';
 import 'product_detail_screen.dart';
 import 'user_management_screen.dart';
@@ -231,7 +232,7 @@ class _AdminScreenState extends State<AdminScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Danh mục: ${p.categoryName ?? 'Chưa phân loại'}'),
-                      Text('Giá: ${p.price.toStringAsFixed(0)} đ'),
+                      Text('Giá: ${formatPrice(p.price)}'),
                       StockText(p.quantity),
                     ],
                   ),

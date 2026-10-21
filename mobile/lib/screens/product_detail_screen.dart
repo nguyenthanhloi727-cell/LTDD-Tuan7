@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../widgets/product_image.dart';
 import '../widgets/stock_text.dart';
+import '../utils/format.dart';
 
 // UP9: xem chi tiet 1 san pham. User mo tu MainScreen (bam vao san pham),
 // Admin mo tu AdminScreen (nut "Xem chi tiet"). Chi xem, khong sua.
@@ -31,7 +32,7 @@ class ProductDetailScreen extends StatelessWidget {
           Text(p.name, style: textTheme.headlineSmall),
           const SizedBox(height: 8),
           Text(
-            '${p.price.toStringAsFixed(0)} đ',
+            formatPrice(p.price),
             style: textTheme.titleLarge?.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,

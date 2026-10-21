@@ -8,6 +8,7 @@ import '../widgets/logout_button.dart';
 import '../widgets/product_image.dart';
 import '../widgets/refresh_message.dart';
 import '../widgets/stock_text.dart';
+import '../utils/format.dart';
 import 'product_detail_screen.dart';
 
 // Trang User: danh sach san pham.
@@ -96,7 +97,7 @@ class _MainScreenState extends State<MainScreen> {
                       StockText(p.quantity),
                     ],
                   ),
-                  trailing: Text('${p.price.toStringAsFixed(0)} đ'),
+                  trailing: Text(formatPrice(p.price)),
                   // UP9: bam vao san pham -> xem chi tiet
                   onTap: () => Navigator.push(
                     context,
