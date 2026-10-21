@@ -15,7 +15,7 @@
 - [x] BT3. Mở lại app vào đúng trang theo role
 - [x] BT4. Phân quyền API danh sách sản phẩm
 - [x] BT6+8. Category + Product.CategoryId nullable + xóa danh mục thì set null
-- [ ] BT7. Admin thêm/xóa/sửa danh mục
+- [x] BT7. Admin thêm/xóa/sửa danh mục
 - [ ] BIO. Đăng nhập nhanh bằng vân tay với biometric_storage
 - [ ] BT5. smart_auth (điểm cộng)
 - [ ] FINAL. README + soát repo + tag nộp bài
@@ -288,3 +288,8 @@ Người dùng tự kiểm tra (demo cho thầy):
   `ProductsController`: 2 GET trả `ProductDto` qua expression `ToDto` (LEFT JOIN lấy `Category.Name`); POST/PUT/DELETE vẫn nhận `Product` (gửi `categoryId` được).
   Mobile: `Product` thêm `categoryId`, `categoryName` (nullable); `MainScreen` subtitle "Danh mục: ... / Chưa phân loại".
   Cho BT7: chưa có `CategoriesController` và `CategoryService`; nhớ `[Authorize]` + Admin cho POST/PUT/DELETE, service dùng `_headers()` + `ApiException` như `ProductService`.
+- BT7 (xong): mới `Controllers/CategoriesController.cs`: `[Authorize]` cả class (GET all sắp theo Name, GET id), POST/PUT/DELETE `[Authorize(Roles = "Admin")]`; PUT tìm bản cũ rồi gán Name/Description; DELETE dựa vào SetNull (không đụng sản phẩm).
+  Mobile: `ConfigUrl.categories`; `models/category.dart`; `services/category_service.dart` (`getCategories`, `createCategory(name)`, `updateCategory`, `deleteCategory(id)`, `_check()` ném `ApiException` import từ `product_service.dart`). `ProductService.updateProduct(product)` PUT cả sản phẩm.
+  Mới `screens/category_screen.dart` (`CategoryScreen`: FAB thêm, sửa/xóa qua dialog, xóa có câu "Sản phẩm trong danh mục này sẽ thành Chưa phân loại").
+  `AdminScreen` đổi sang StatefulWidget: danh sách sản phẩm + danh mục, bấm sản phẩm → dialog `DropdownButton<int?>` ("Không có" = null) → `updateProduct`; AppBar nút `Icons.category` mở `CategoryScreen`. `MainScreen` (User) không đổi.
+  Cho BIO/BT5: chưa có form thêm/sửa sản phẩm đầy đủ (chỉ đổi danh mục); `_headers()` đang lặp ở 2 service.
