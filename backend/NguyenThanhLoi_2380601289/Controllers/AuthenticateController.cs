@@ -70,6 +70,8 @@ namespace NguyenThanhLoi_2380601289.Controllers
                 new Claim(ClaimTypes.Name, user.UserName!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
+            // Dau cua tai khoan: Admin thu hoi / khoa -> doi SecurityStamp -> token cu het dung (Program.cs)
+            authClaims.Add(new Claim("stamp", await _userManager.GetSecurityStampAsync(user)));
             foreach (var userRole in userRoles)
                 authClaims.Add(new Claim(ClaimTypes.Role, userRole));
 

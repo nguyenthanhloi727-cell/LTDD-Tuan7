@@ -20,7 +20,7 @@
 - [x] BT5. smart_auth (điểm cộng)
 - [x] FINAL. README + soát repo + tag nộp bài
 - [x] UP1. Chỉ 1 tài khoản Admin + Admin quản lý (khóa/mở khóa) tài khoản
-- [ ] UP2. Token: tự đăng xuất khi hết hạn/bị thu hồi + nút thu hồi token
+- [x] UP2. Token: tự đăng xuất khi hết hạn/bị thu hồi + nút thu hồi token
 - [ ] UP3. Số lượng + "Hết hàng" + chặn số âm + email không trùng + lỗi danh mục không tồn tại
 - [ ] UP4. Kéo xuống để tải lại + dispose TextEditingController
 
@@ -413,3 +413,8 @@ Người dùng tự kiểm tra:
   Mới `Controllers/UsersController.cs` `[Authorize(Roles = "Admin")]`: `GET api/Users` (`id, username, email, phoneNumber, role, isLocked`), `POST {id}/lock` (LockoutEnd = MaxValue, Admin → 400), `POST {id}/unlock`.
   Mobile: `ConfigUrl.users`, `models/app_user.dart` (`AppUser`, `isAdmin`), `services/user_service.dart` (`getUsers`, `lock`, `unlock`; `_check` đọc `message` từ body), `screens/user_management_screen.dart`; `AdminScreen` AppBar nút `Icons.people`.
   Cho UP2: khóa chỉ chặn đăng nhập mới, token cũ vẫn dùng được. README/TESTING đã đổi sang Admin seed sẵn, TESTING thêm mục 7b. `_headers()` giờ lặp ở 3 service.
+- UP2 (xong): `AuthenticateController.Login` thêm claim `"stamp"` = SecurityStamp. `Program.cs` `JwtBearerEvents.OnTokenValidated`: user không còn / đang khóa / `stamp` khác DB → `context.Fail` → 401 (token cũ không có `stamp` cũng 401, đăng nhập lại là xong).
+  `UsersController`: class `[Authorize]`, từng hàm Admin gắn `[Authorize(Roles = "Admin")]`; mới `POST {id}/revoke` (Admin) và `POST me/revoke` (ai cũng gọi cho mình) = `UpdateSecurityStampAsync`; `lock` cũng đổi stamp → bị đá ra ngay.
+  Mobile: mới `services/session.dart` (`isSessionExpired(e)`, `handleSessionExpired(context)` = logout + SnackBar + về `LoginScreen`). `_headers()` 3 service dùng `getValidToken()`, hết `exp` → ném `ApiException(401)` không gọi API.
+  Main/Admin/Category/UserManagement: `_fetch()` bắt 401 → `handleSessionExpired`. `UserService.revoke(id)`, `revokeMe()`; `UserManagementScreen` nút `Icons.logout` "Buộc đăng xuất"; `AdminScreen` nút `Icons.timer_off` "Làm hết hạn token (demo)". `TESTING.md` mục 7c.
+  Lưu ý: DB máy này Admin là `testadmin` (Test@123), không phải `admin` trong appsettings. Đã test thật trên Xiaomi 4 kịch bản OK. Pull-to-refresh chỉ có khi danh sách không rỗng (UP4).

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_user.dart';
+import '../services/session.dart';
 import '../services/user_service.dart';
 
 // Trang Admin: xem danh sach tai khoan, khoa / mo khoa tai khoan User.
@@ -18,17 +19,32 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   @override
   void initState() {
     super.initState();
-    _futureUsers = _service.getUsers();
+    _futureUsers = _fetch();
+  }
+
+  // Goi API; 401 (het han / bi thu hoi) -> ve man Dang nhap.
+  Future<List<AppUser>> _fetch() async {
+    try {
+      return await _service.getUsers();
+    } catch (e) {
+      if (mounted && isSessionExpired(e)) await handleSessionExpired(context);
+      rethrow;
+    }
   }
 
   void _reload() {
     setState(() {
-      _futureUsers = _service.getUsers();
+      _futureUsers = _fetch();
     });
   }
 
+  // 401 -> ve man Dang nhap, con lai -> SnackBar.
   void _showMessage(Object message) {
     if (!mounted) return;
+    if (isSessionExpired(message)) {
+      handleSessionExpired(context);
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$message')),
     );
@@ -70,6 +86,35 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
   }
 
+  // "Buoc dang xuat": thu hoi moi token cua user, user phai dang nhap lai.
+  Future<void> _revoke(AppUser u) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Buộc đăng xuất "${u.username}"?'),
+        content: const Text(
+            'Token hiện tại của tài khoản này hết dùng được, phải đăng nhập lại.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Buộc đăng xuất'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await _service.revoke(u.id);
+      _showMessage('Đã buộc đăng xuất "${u.username}"');
+    } catch (e) {
+      _showMessage(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,13 +147,24 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   'Role: ${u.role}${u.isLocked ? ' • Đang khóa' : ''}',
                 ),
                 isThreeLine: true,
-                // Dong Admin khong co nut khoa
+                // Dong Admin khong co nut khoa / buoc dang xuat
                 trailing: u.isAdmin
                     ? null
-                    : IconButton(
-                        tooltip: u.isLocked ? 'Mở khóa' : 'Khóa',
-                        icon: Icon(u.isLocked ? Icons.lock_open : Icons.lock),
-                        onPressed: () => _toggleLock(u),
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            tooltip: 'Buộc đăng xuất',
+                            icon: const Icon(Icons.logout),
+                            onPressed: () => _revoke(u),
+                          ),
+                          IconButton(
+                            tooltip: u.isLocked ? 'Mở khóa' : 'Khóa',
+                            icon: Icon(
+                                u.isLocked ? Icons.lock_open : Icons.lock),
+                            onPressed: () => _toggleLock(u),
+                          ),
+                        ],
                       ),
               );
             },

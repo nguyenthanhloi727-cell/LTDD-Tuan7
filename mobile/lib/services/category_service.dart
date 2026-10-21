@@ -8,12 +8,14 @@ import 'auth_service.dart';
 import 'product_service.dart' show ApiException;
 
 class CategoryService {
-  // Header co token: Authorization: Bearer <token>
+  // Header co token: Authorization: Bearer <token>.
+  // Token het han theo exp -> bao 401 luon, khong goi API.
   Future<Map<String, String>> _headers() async {
-    final token = await AuthService().getToken();
+    final token = await AuthService().getValidToken();
+    if (token == null) throw ApiException(401, 'Phiên đăng nhập hết hạn');
     return {
       'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
+      'Authorization': 'Bearer $token',
     };
   }
 
