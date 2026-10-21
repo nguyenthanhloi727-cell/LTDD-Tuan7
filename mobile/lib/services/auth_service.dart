@@ -30,7 +30,7 @@ class AuthService {
 
   // Goi API register. Tra ve null neu ok, nguoc lai la thong bao loi.
   Future<String?> register(String username, String email, String password,
-      String initials) async {
+      String initials, {String? phoneNumber}) async {
     final response = await http.post(
       Uri.parse(ConfigUrl.register),
       headers: {'Content-Type': 'application/json'},
@@ -39,6 +39,7 @@ class AuthService {
         'email': email,
         'password': password,
         'initials': initials,
+        'phoneNumber': phoneNumber,
         'role': 'User',
       }),
     );
