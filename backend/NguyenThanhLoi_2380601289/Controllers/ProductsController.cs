@@ -27,9 +27,17 @@ namespace NguyenThanhLoi_2380601289.Controllers
             Price = p.Price,
             Description = p.Description,
             ImageUrl = p.ImageUrl,
+            Quantity = p.Quantity,
             CategoryId = p.CategoryId,
             CategoryName = p.Category != null ? p.Category.Name : null
         };
+
+        // categoryId null = chua phan loai (hop le); co gia tri thi phai co trong bang Categories.
+        // Khong kiem truoc thi SQL loi khoa ngoai -> 500.
+        private async Task<bool> CategoryExists(int? categoryId)
+        {
+            return categoryId == null || await _context.Categories.AnyAsync(c => c.Id == categoryId);
+        }
 
         // GET: api/Products
         [HttpGet]
@@ -58,6 +66,11 @@ namespace NguyenThanhLoi_2380601289.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
+            if (!await CategoryExists(product.CategoryId))
+            {
+                return BadRequest(new { message = "Danh mục không tồn tại" });
+            }
+
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
@@ -71,6 +84,10 @@ namespace NguyenThanhLoi_2380601289.Controllers
             if (id != product.Id)
             {
                 return BadRequest();
+            }
+            if (!await CategoryExists(product.CategoryId))
+            {
+                return BadRequest(new { message = "Danh mục không tồn tại" });
             }
 
             _context.Entry(product).State = EntityState.Modified;

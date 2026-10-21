@@ -12,11 +12,15 @@ namespace NguyenThanhLoi_2380601289.Models
         public string Name { get; set; } = string.Empty;
 
         [Column(TypeName = "decimal(18,2)")]
+        [Range(0, double.MaxValue, ErrorMessage = "Giá không được âm")]
         public decimal Price { get; set; }
 
         public string? Description { get; set; }
 
         public string? ImageUrl { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng không được âm")]
+        public int Quantity { get; set; } = 0;
 
         // Cho phep NULL: san pham chua phan loai, hoac danh muc da bi xoa.
         public int? CategoryId { get; set; }

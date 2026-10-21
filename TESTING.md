@@ -147,6 +147,21 @@ Token đăng nhập **trước** khi cập nhật UP2 không có `stamp` → cũ
 
 Vân tay: sau khi bị thu hồi vẫn đăng nhập vân tay được (gọi login lấy token mới), trừ khi tài khoản bị khóa.
 
+## 7d. Số lượng, "Hết hàng", chặn số âm, email không trùng (UP3)
+
+Sản phẩm có `quantity` (mặc định 0, migration `AddQuantity`). Backend: `[Range]` chặn giá/số lượng âm, `categoryId` không tồn tại → 400, `RequireUniqueEmail`.
+
+| # | Làm gì | Kết quả đúng |
+|---|--------|--------------|
+| 7d.1 | `admin` → nút **Thêm sản phẩm** → thử gõ `-` vào ô Giá / Số lượng | Không gõ được (chỉ nhận số); để trống → "Bắt buộc nhập" |
+| 7d.2 | Thêm sản phẩm số lượng `0` → đăng nhập `user` | Sản phẩm hiện chữ đỏ **"Hết hàng"**; sản phẩm khác hiện "Còn: n" |
+| 7d.3 | `admin` bấm 1 sản phẩm → sửa Tên/Giá/Số lượng/Danh mục → Lưu | Danh sách cập nhật đúng |
+| 7d.4 | Swagger token Admin `POST /api/Products` `{"name":"A","price":-5}` hoặc `"quantity":-1` | `400` "Giá không được âm" / "Số lượng không được âm" |
+| 7d.5 | Swagger `POST /api/Products` `{"name":"A","price":1,"categoryId":999999}` | `400` "Danh mục không tồn tại" (không còn 500) |
+| 7d.6 | App đăng ký tài khoản mới dùng email đã có | Báo **"Email đã được sử dụng"** |
+
+Tài khoản cũ trùng email (tạo trước UP3) vẫn giữ nguyên, chỉ chặn tạo mới.
+
 ## 8. Kiểm tra code trước khi nộp
 
 ```bash

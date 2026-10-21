@@ -61,9 +61,48 @@ class ProductService {
     if (response.statusCode == 403) {
       throw ApiException(403, 'Không có quyền');
     }
+    if (response.statusCode == 400) {
+      throw ApiException(400, _readMessage(response.body, 'Dữ liệu không hợp lệ'));
+    }
     if (response.statusCode != 204 && response.statusCode != 200) {
       throw ApiException(
           response.statusCode, 'Lỗi sửa sản phẩm: ${response.statusCode}');
     }
+  }
+
+  // Admin: POST san pham moi (id = 0, server tu sinh id).
+  Future<void> createProduct(Product product) async {
+    final response = await http.post(
+      Uri.parse(ConfigUrl.products),
+      headers: await _headers(),
+      body: jsonEncode(product.toJson()),
+    );
+    if (response.statusCode == 401) {
+      throw ApiException(401, 'Phiên đăng nhập hết hạn');
+    }
+    if (response.statusCode == 403) {
+      throw ApiException(403, 'Không có quyền');
+    }
+    if (response.statusCode == 400) {
+      throw ApiException(400, _readMessage(response.body, 'Dữ liệu không hợp lệ'));
+    }
+    if (response.statusCode != 201 && response.statusCode != 200) {
+      throw ApiException(
+          response.statusCode, 'Lỗi thêm sản phẩm: ${response.statusCode}');
+    }
+  }
+
+  // Loi 400: { message } (vd "Danh muc khong ton tai")
+  // hoac { errors: { Price: [...] } } (loi [Range] cua ASP.NET).
+  String _readMessage(String body, String fallback) {
+    try {
+      final data = jsonDecode(body);
+      if (data['message'] != null) return data['message'];
+      final errors = data['errors'];
+      if (errors is Map && errors.isNotEmpty) {
+        return errors.values.expand((e) => e as List).join('\n');
+      }
+    } catch (_) {}
+    return fallback;
   }
 }

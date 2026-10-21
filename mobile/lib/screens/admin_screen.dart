@@ -8,11 +8,13 @@ import '../services/session.dart';
 import '../services/user_service.dart';
 import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
+import '../widgets/product_form_dialog.dart';
+import '../widgets/stock_text.dart';
 import 'category_screen.dart';
 import 'user_management_screen.dart';
 
 // Trang danh cho tai khoan co role Admin:
-// danh sach san pham, bam vao san pham de chon danh muc; nut quan ly danh muc.
+// danh sach san pham (them / sua day du), nut quan ly danh muc.
 class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
 
@@ -84,8 +86,8 @@ class _AdminScreenState extends State<AdminScreen> {
     _reload(); // danh muc co the da bi sua/xoa
   }
 
-  // Dialog Dropdown chon danh muc cho san pham (null = "Khong co").
-  Future<void> _chooseCategory(Product p) async {
+  // Form them (p == null) / sua san pham: Ten, Gia, So luong, Danh muc.
+  Future<void> _openForm([Product? p]) async {
     final List<Category> categories;
     try {
       categories = await _categoryService.getCategories();
@@ -95,51 +97,19 @@ class _AdminScreenState extends State<AdminScreen> {
     }
     if (!mounted) return;
 
-    int? selected = p.categoryId;
-    final ok = await showDialog<bool>(
+    final result = await showDialog<Product>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Text('Danh mục của "${p.name}"'),
-          content: DropdownButton<int?>(
-            isExpanded: true,
-            value: selected,
-            items: [
-              const DropdownMenuItem<int?>(
-                value: null,
-                child: Text('Không có'),
-              ),
-              ...categories.map((c) => DropdownMenuItem<int?>(
-                    value: c.id,
-                    child: Text(c.name),
-                  )),
-            ],
-            onChanged: (v) => setDialogState(() => selected = v),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Hủy'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Lưu'),
-            ),
-          ],
-        ),
-      ),
+      builder: (_) => ProductFormDialog(product: p, categories: categories),
     );
-    if (ok != true) return;
+    if (result == null) return;
 
     try {
-      await _productService.updateProduct(Product(
-        id: p.id,
-        name: p.name,
-        price: p.price,
-        description: p.description,
-        imageUrl: p.imageUrl,
-        categoryId: selected,
-      ));
+      if (p == null) {
+        await _productService.createProduct(result);
+        _showMessage('Đã thêm sản phẩm');
+      } else {
+        await _productService.updateProduct(result);
+      }
       _reload();
     } catch (e) {
       _handleError(e);
@@ -189,6 +159,11 @@ class _AdminScreenState extends State<AdminScreen> {
           const LogoutButton(),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _openForm(),
+        icon: const Icon(Icons.add),
+        label: const Text('Thêm sản phẩm'),
+      ),
       body: FutureBuilder<List<Product>>(
         future: _futureProducts,
         builder: (context, snapshot) {
@@ -203,16 +178,23 @@ class _AdminScreenState extends State<AdminScreen> {
             return const Center(child: Text('Chưa có sản phẩm'));
           }
           return ListView.builder(
+            padding: const EdgeInsets.only(bottom: 80), // chua cho cho nut Them
             itemCount: products.length,
             itemBuilder: (context, index) {
               final p = products[index];
               return ListTile(
                 leading: const Icon(Icons.shopping_bag),
                 title: Text(p.name),
-                subtitle:
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text('Danh mục: ${p.categoryName ?? 'Chưa phân loại'}'),
+                    Text('Giá: ${p.price.toStringAsFixed(0)} đ'),
+                    StockText(p.quantity),
+                  ],
+                ),
                 trailing: const Icon(Icons.edit),
-                onTap: () => _chooseCategory(p),
+                onTap: () => _openForm(p),
               );
             },
           );

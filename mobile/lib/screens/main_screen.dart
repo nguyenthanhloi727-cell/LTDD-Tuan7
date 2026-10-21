@@ -5,6 +5,7 @@ import '../services/product_service.dart';
 import '../services/session.dart';
 import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
+import '../widgets/stock_text.dart';
 
 // Trang User: danh sach san pham.
 class MainScreen extends StatefulWidget {
@@ -81,9 +82,15 @@ class _MainScreenState extends State<MainScreen> {
                 return ListTile(
                   leading: const Icon(Icons.shopping_bag),
                   title: Text(p.name),
-                  subtitle: Text(
-                    'Danh mục: ${p.categoryName ?? 'Chưa phân loại'}'
-                    '${p.description == null ? '' : '\n${p.description}'}',
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Danh mục: ${p.categoryName ?? 'Chưa phân loại'}'
+                        '${p.description == null ? '' : '\n${p.description}'}',
+                      ),
+                      StockText(p.quantity),
+                    ],
                   ),
                   trailing: Text('${p.price.toStringAsFixed(0)} đ'),
                 );
