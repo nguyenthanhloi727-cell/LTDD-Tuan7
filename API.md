@@ -22,6 +22,7 @@ Chỉ 3 API trong nhóm **Authenticate** gọi được khi chưa đăng nhập.
    { "status": true, "message": "Đăng nhập thành công",
      "token": "eyJhbGciOiJIUzI1NiIs...", "expiration": "2026-10-21T15:00:00Z" }
    ```
+   Sai tên hoặc mật khẩu → `401` `{ "status": false, "message": "Sai tên đăng nhập hoặc mật khẩu" }`; tài khoản bị khóa → `401` "Tài khoản đã bị khóa".
 2. Copy giá trị `token` (không lấy dấu ngoặc kép).
 3. Bấm nút **Authorize** 🔓 ở góc phải trên → dán token vào ô **Value** → **Authorize** → **Close**.
    Chỉ dán token, **không** gõ chữ `Bearer` (Swagger tự thêm).
@@ -122,10 +123,14 @@ Tài khoản Admin có sẵn: `admin` / `Admin@123` (tạo tự động khi ch�
 **Xem danh sách**: `GET /api/Products` → `200`
 ```json
 [
-  { "id": 1, "name": "iPhone 15", "price": 20000000, "description": "128GB", "imageUrl": null,
-    "quantity": 10, "categoryId": 1, "categoryName": "Điện thoại" }
+  { "id": 10, "name": "iPhone 15", "price": 20990000,
+    "description": "Màn hình 6.1 inch, chip A16 Bionic, bộ nhớ 128GB.",
+    "imageUrl": "/images/samples/iphone-15.png",
+    "quantity": 12, "categoryId": 1, "categoryName": "Điện thoại" }
 ]
 ```
+- `imageUrl` dạng `/...` là file trên backend, mở bằng `http://localhost:5080` + đường dẫn (ví dụ `http://localhost:5080/images/samples/iphone-15.png`, không cần token). Dạng `https://...` là link ngoài. `null` = không có ảnh.
+- `categoryName: null` = "Chưa phân loại".
 
 **Sửa** (Admin): `PUT /api/Products/{id}` — ô `id` trên URL và `"id"` trong body **phải giống nhau**, gửi **đầy đủ** các trường:
 ```json
@@ -187,6 +192,7 @@ Copy `id` (chuỗi dài) để dùng cho các API bên dưới, dán vào ô `id
 3. Authorize → Logout, đăng nhập `user1`, Authorize bằng token của `user1`:
    - `GET /api/Products` → **200**
    - `POST /api/Products` / `DELETE /api/Categories/1` / `GET /api/Users` → **403**
-4. Đăng nhập lại `admin` → `POST /api/Users/{id của user1}/lock` → quay lại token `user1` gọi `GET /api/Products` → **401**.
+4. Token `user1` gọi `POST /api/Products/upload-image` → **403**; token `admin` upload ảnh → **200** `{ "url": ... }`.
+5. Đăng nhập lại `admin` → `POST /api/Users/{id của user1}/lock` → quay lại token `user1` gọi `GET /api/Products` → **401**.
 
 Quy trình test cả app lẫn API theo từng bài: [TESTING.md](TESTING.md).
