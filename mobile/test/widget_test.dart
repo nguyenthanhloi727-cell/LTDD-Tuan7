@@ -1,10 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:nguyenthanhloi_2380601289/main.dart';
+import 'package:nguyenthanhloi_2380601289/screens/login_screen.dart';
 
 void main() {
-  testWidgets('App hien tieu de danh sach san pham', (tester) async {
-    await tester.pumpWidget(const MyApp());
-    expect(find.text('Danh sách sản phẩm'), findsOneWidget);
+  testWidgets('Chua dang nhap thi mo LoginScreen', (tester) async {
+    await tester.pumpWidget(const MyApp(isLoggedIn: false));
+    expect(find.byType(LoginScreen), findsOneWidget);
   });
 }

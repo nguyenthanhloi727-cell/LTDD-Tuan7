@@ -9,7 +9,7 @@
 
 - [x] P0. Khởi tạo git + đẩy code tuần 6
 - [x] P1. Backend: Identity + JWT + Role
-- [ ] P2. Flutter: dotenv + jwt_decoder + đăng nhập/đăng ký + tự đăng nhập
+- [x] P2. Flutter: dotenv + jwt_decoder + đăng nhập/đăng ký + tự đăng nhập
 - [ ] BT1. Đăng xuất
 - [ ] BT2. Đăng nhập đúng giao diện theo role
 - [ ] BT3. Mở lại app vào đúng trang theo role
@@ -263,3 +263,8 @@ Người dùng tự kiểm tra (demo cho thầy):
   `Program.cs`: AddIdentity, AddJwtBearer, Swagger nút Authorize, seed role Admin/User, `UseAuthentication()` trước `UseAuthorization()`. Migration `InitialIdentityModel`.
   Chạy máy khác: `Program.cs` tự `Database.Migrate()` lúc khởi động + thử `.\SQLEXPRESS` 3s, không được thì dùng `LocalDbConnection` `(localdb)\MSSQLLocalDB` → clone về bấm Run là chạy.
   Lưu ý cho P2: `dotnet` không có trong PATH của Claude, gọi `C:\Program Files\dotnet\dotnet.exe`. DB máy mới trống, phải register lại tài khoản.
+- P2 (xong): gói `jwt_decoder`, `flutter_dotenv`, `shared_preferences`; `mobile/.env` (`BASE_URL=http://10.0.2.2:5080`, khai trong assets, được commit). `main()` load dotenv rồi `AuthService().getValidToken()` → `MyApp(isLoggedIn)` chọn `MainScreen`/`LoginScreen`.
+  `config/config_url.dart`: getter `baseUrl`, `login`, `register`, `products` (không còn `const`).
+  `services/auth_service.dart`: `login`, `register` (trả null nếu ok, ngược lại chuỗi lỗi), `saveToken`/`getToken`/`logout` (key prefs `'token'`), `getValidToken`, `getRole(token)` đọc claim `http://schemas.microsoft.com/ws/2008/06/identity/claims/role`.
+  `screens/login_screen.dart`, `screens/register_screen.dart` mới; `test/widget_test.dart` sửa theo `MyApp(isLoggedIn: false)`.
+  Cho BT1/BT2: `MainScreen` chưa có nút đăng xuất; login hiện luôn vào `MainScreen`, chưa rẽ theo role. Máy này không có Python, sửa file bằng Edit.
