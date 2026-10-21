@@ -256,4 +256,4 @@ Người dùng tự kiểm tra (demo cho thầy):
 
 - P0 (dở, chưa `[x]`): tạo `backend/NguyenThanhLoi_2380601289` (Product, ApplicationDbContext, ProductsController CRUD, CORS "AllowAll", Swagger, cổng 5080) + `.sln`; DB `.\SQLEXPRESS` Windows Auth.
   Mobile `nguyenthanhloi_2380601289`: `config/config_url.dart` (baseUrl `http://10.0.2.2:5080`), `models/product.dart`, `services/product_service.dart`, `screens/main_screen.dart`; Manifest thêm INTERNET + usesCleartextTraffic. `flutter analyze` sạch.
-  Còn dở: máy chưa có .NET 8 (thiếu `dotnet.exe`) → chưa `dotnet build backend`, chưa migration `InitialProduct`/`database update`, chưa tạo remote GitHub + push.
+  Đã cài .NET 8 SDK 8.0.426 (winget). `dotnet-ef` global là bản 10.0.8, dùng được với EF 8 → giữ nguyên. Migration `InitialProduct` + database update xong, `dotnet build backend` 0 lỗi.
