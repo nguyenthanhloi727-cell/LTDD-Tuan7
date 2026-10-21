@@ -64,8 +64,8 @@ Quy trình test chi tiết từng bài: [TESTING.md](TESTING.md).
 ## Tài khoản test
 
 - **Admin** (tạo sẵn khi chạy backend lần đầu): `admin` / `Admin@123`. Hệ thống chỉ có 1 Admin, không có cách đăng ký hay nâng quyền lên Admin.
-- **User**: đăng ký trong app, hoặc Swagger `POST /api/Authenticate/register`:
-  `{ "username": "user", "email": "user@test.com", "password": "User@123", "initials": "US" }`
+- **User**: đăng ký trong app (cần mã OTP, xem bên dưới), hoặc Swagger: gọi `POST /api/Authenticate/send-otp` `{ "phoneNumber": "0900000001" }`, lấy mã 6 số trong log backend, rồi `POST /api/Authenticate/register`:
+  `{ "username": "user", "email": "user@test.com", "password": "User@123", "initials": "US", "phoneNumber": "0900000001", "otp": "<mã>" }`
   (gửi thêm `"role": "Admin"` cũng bị bỏ qua, tài khoản vẫn là `User`).
 
 DB cũ đã có Admin tạo trước đây qua Swagger thì backend không tạo thêm `admin`; dùng lại tài khoản Admin cũ.

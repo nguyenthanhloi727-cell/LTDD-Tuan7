@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NguyenThanhLoi_2380601289.Models;
+using NguyenThanhLoi_2380601289.Services;
 
 namespace NguyenThanhLoi_2380601289.Controllers
 {
@@ -16,19 +17,47 @@ namespace NguyenThanhLoi_2380601289.Controllers
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
+        private readonly OtpService _otpService;
 
         public AuthenticateController(UserManager<User> userManager,
-            RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+            RoleManager<IdentityRole> roleManager, IConfiguration configuration,
+            OtpService otpService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
+            _otpService = otpService;
+        }
+
+        // POST: api/Authenticate/send-otp  { "phoneNumber": "0912345678" }
+        // Tao ma OTP 6 so (han 5 phut), "gui SMS" = in ra log backend (xem OtpService)
+        [HttpPost("send-otp")]
+        public async Task<IActionResult> SendOtp([FromBody] SendOtpModel model)
+        {
+            var phone = OtpService.NormalizePhone(model.PhoneNumber);
+            if (phone == null)
+                return BadRequest(new { message = "Số điện thoại không hợp lệ" });
+
+            if (await _userManager.Users.AnyAsync(u => u.PhoneNumber == phone))
+                return BadRequest(new { message = "Số điện thoại đã được sử dụng" });
+
+            var waitSeconds = _otpService.Send(phone);
+            if (waitSeconds > 0)
+                return StatusCode(StatusCodes.Status429TooManyRequests,
+                    new { message = $"Vui lòng đợi {waitSeconds} giây rồi gửi lại mã" });
+
+            return Ok(new { message = "Đã gửi mã OTP", expiresInSeconds = (int)OtpService.Lifetime.TotalSeconds });
         }
 
         // POST: api/Authenticate/register
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
+            // UP5: bat buoc SDT + ma OTP dung
+            var phone = OtpService.NormalizePhone(model.PhoneNumber);
+            if (phone == null)
+                return BadRequest(new { message = "Số điện thoại không hợp lệ" });
+
             var userExists = await _userManager.FindByNameAsync(model.Username);
             if (userExists != null)
                 return BadRequest(new { message = "Tên đăng nhập đã tồn tại" });
@@ -40,12 +69,20 @@ namespace NguyenThanhLoi_2380601289.Controllers
                 && await _userManager.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail))
                 return BadRequest(new { message = "Email đã được sử dụng" });
 
+            if (await _userManager.Users.AnyAsync(u => u.PhoneNumber == phone))
+                return BadRequest(new { message = "Số điện thoại đã được sử dụng" });
+
+            // Ma chi bi xoa khi tao tai khoan thanh cong: sai mat khau... thi sua roi dang ky lai bang ma cu
+            if (!_otpService.Verify(phone, model.Otp))
+                return BadRequest(new { message = "Mã OTP không đúng hoặc đã hết hạn" });
+
             var user = new User
             {
                 UserName = model.Username,
                 Email = model.Email,
                 Initials = model.Initials,
-                PhoneNumber = model.PhoneNumber,
+                PhoneNumber = phone,
+                PhoneNumberConfirmed = true, // da xac minh qua OTP
                 SecurityStamp = Guid.NewGuid().ToString()
             };
 
@@ -63,6 +100,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
             // Dang ky luon la User; tai khoan Admin duy nhat duoc tao san luc khoi dong (Program.cs)
             await _userManager.AddToRoleAsync(user, "User");
+            _otpService.Remove(phone);
 
             return Ok(new { message = "Đăng ký thành công" });
         }
@@ -115,6 +153,12 @@ namespace NguyenThanhLoi_2380601289.Controllers
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string Initials { get; set; } = string.Empty;
+        public string? PhoneNumber { get; set; }
+        public string? Otp { get; set; }
+    }
+
+    public class SendOtpModel
+    {
         public string? PhoneNumber { get; set; }
     }
 

@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NguyenThanhLoi_2380601289.Data;
 using NguyenThanhLoi_2380601289.Models;
+using NguyenThanhLoi_2380601289.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddIdentity<User, IdentityRole>(options => options.User.RequireUniqueEmail = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+// OTP dang ky (UP5): luu ma trong bo nho, Singleton de cac request dung chung
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<OtpService>();
 
 // JWT: kiem tra token gui len trong header Authorization: Bearer <token>
 builder.Services.AddAuthentication(options =>
