@@ -8,6 +8,7 @@ import '../services/session.dart';
 import '../services/user_service.dart';
 import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
+import '../widgets/refresh_message.dart';
 import '../widgets/product_form_dialog.dart';
 import '../widgets/stock_text.dart';
 import 'category_screen.dart';
@@ -43,10 +44,15 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
-  void _reload() {
+  Future<void> _reload() async {
     setState(() {
       _futureProducts = _fetch();
     });
+    try {
+      await _futureProducts;
+    } catch (_) {
+      // Loi da hien trong FutureBuilder.
+    }
   }
 
   // Nut demo: thu hoi token cua chinh minh roi tai lai -> API tra 401 -> ve man Dang nhap.
@@ -164,41 +170,45 @@ class _AdminScreenState extends State<AdminScreen> {
         icon: const Icon(Icons.add),
         label: const Text('Thêm sản phẩm'),
       ),
-      body: FutureBuilder<List<Product>>(
-        future: _futureProducts,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('${snapshot.error}'));
-          }
-          final products = snapshot.data ?? [];
-          if (products.isEmpty) {
-            return const Center(child: Text('Chưa có sản phẩm'));
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.only(bottom: 80), // chua cho cho nut Them
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              final p = products[index];
-              return ListTile(
-                leading: const Icon(Icons.shopping_bag),
-                title: Text(p.name),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Danh mục: ${p.categoryName ?? 'Chưa phân loại'}'),
-                    Text('Giá: ${p.price.toStringAsFixed(0)} đ'),
-                    StockText(p.quantity),
-                  ],
-                ),
-                trailing: const Icon(Icons.edit),
-                onTap: () => _openForm(p),
-              );
-            },
-          );
-        },
+      body: RefreshIndicator(
+        onRefresh: _reload,
+        child: FutureBuilder<List<Product>>(
+          future: _futureProducts,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return RefreshMessage('${snapshot.error}');
+            }
+            final products = snapshot.data ?? [];
+            if (products.isEmpty) {
+              return const RefreshMessage('Chưa có sản phẩm');
+            }
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 80), // chua cho cho nut Them
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final p = products[index];
+                return ListTile(
+                  leading: const Icon(Icons.shopping_bag),
+                  title: Text(p.name),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Danh mục: ${p.categoryName ?? 'Chưa phân loại'}'),
+                      Text('Giá: ${p.price.toStringAsFixed(0)} đ'),
+                      StockText(p.quantity),
+                    ],
+                  ),
+                  trailing: const Icon(Icons.edit),
+                  onTap: () => _openForm(p),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

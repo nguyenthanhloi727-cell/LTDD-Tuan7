@@ -5,6 +5,7 @@ import '../services/product_service.dart';
 import '../services/session.dart';
 import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
+import '../widgets/refresh_message.dart';
 import '../widgets/stock_text.dart';
 
 // Trang User: danh sach san pham.
@@ -60,22 +61,23 @@ class _MainScreenState extends State<MainScreen> {
         title: const Text('Danh sách sản phẩm'),
         actions: const [BiometricOffButton(), LogoutButton()],
       ),
-      body: FutureBuilder<List<Product>>(
-        future: _futureProducts,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('${snapshot.error}'));
-          }
-          final products = snapshot.data ?? [];
-          if (products.isEmpty) {
-            return const Center(child: Text('Chưa có sản phẩm'));
-          }
-          return RefreshIndicator(
-            onRefresh: _reload,
-            child: ListView.builder(
+      body: RefreshIndicator(
+        onRefresh: _reload,
+        child: FutureBuilder<List<Product>>(
+          future: _futureProducts,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return RefreshMessage('${snapshot.error}');
+            }
+            final products = snapshot.data ?? [];
+            if (products.isEmpty) {
+              return const RefreshMessage('Chưa có sản phẩm');
+            }
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
               itemCount: products.length,
               itemBuilder: (context, index) {
                 final p = products[index];
@@ -95,9 +97,9 @@ class _MainScreenState extends State<MainScreen> {
                   trailing: Text('${p.price.toStringAsFixed(0)} đ'),
                 );
               },
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

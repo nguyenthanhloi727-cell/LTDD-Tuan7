@@ -162,6 +162,17 @@ Sản phẩm có `quantity` (mặc định 0, migration `AddQuantity`). Backend:
 
 Tài khoản cũ trùng email (tạo trước UP3) vẫn giữ nguyên, chỉ chặn tạo mới.
 
+## 7e. Kéo xuống để tải lại (UP4)
+
+Trang User, Trang Admin, Quản lý danh mục, Quản lý tài khoản đều có `RefreshIndicator`, kéo được cả khi lỗi hoặc danh sách rỗng.
+
+| # | Làm gì | Kết quả đúng |
+|---|--------|--------------|
+| 7e.1 | Đang ở trang danh sách → tắt backend → kéo xuống | Hiện lỗi kết nối, vẫn kéo xuống được |
+| 7e.2 | Bật lại backend → kéo xuống ở màn lỗi | Danh sách tải lại bình thường |
+| 7e.3 | Màn có danh sách rỗng (vd. xóa hết danh mục) → kéo xuống | Hiện vòng xoay tải lại, không bị kẹt |
+| 7e.4 | Quản lý danh mục → mở dialog Thêm/Sửa nhiều lần, Hủy/Lưu | Không có lỗi "used after being disposed" trong log |
+
 ## 8. Kiểm tra code trước khi nộp
 
 ```bash

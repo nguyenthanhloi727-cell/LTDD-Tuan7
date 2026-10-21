@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/category.dart';
 import '../services/category_service.dart';
 import '../services/session.dart';
+import '../widgets/refresh_message.dart';
 
 // Trang Admin: quan ly danh muc (them, sua, xoa).
 class CategoryScreen extends StatefulWidget {
@@ -32,10 +33,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
     }
   }
 
-  void _reload() {
+  Future<void> _reload() async {
     setState(() {
       _futureCategories = _fetch();
     });
+    try {
+      await _futureCategories;
+    } catch (_) {
+      // Loi da hien trong FutureBuilder.
+    }
   }
 
   // 401 -> ve man Dang nhap, loi khac -> SnackBar.
@@ -52,27 +58,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   // Dialog nhap ten; tra ve ten moi hoac null neu bam Huy.
   Future<String?> _askName(String title, [String initial = '']) {
-    final controller = TextEditingController(text: initial);
     return showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(labelText: 'Tên danh mục'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('Lưu'),
-          ),
-        ],
-      ),
+      builder: (_) => _NameDialog(title: title, initial: initial),
     );
   }
 
@@ -136,44 +124,93 @@ class _CategoryScreenState extends State<CategoryScreen> {
         onPressed: _add,
         child: const Icon(Icons.add),
       ),
-      body: FutureBuilder<List<Category>>(
-        future: _futureCategories,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('${snapshot.error}'));
-          }
-          final categories = snapshot.data ?? [];
-          if (categories.isEmpty) {
-            return const Center(child: Text('Chưa có danh mục'));
-          }
-          return ListView.builder(
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              final c = categories[index];
-              return ListTile(
-                leading: const Icon(Icons.category),
-                title: Text(c.name),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _edit(c),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => _delete(c),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
+      body: RefreshIndicator(
+        onRefresh: _reload,
+        child: FutureBuilder<List<Category>>(
+          future: _futureCategories,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return RefreshMessage('${snapshot.error}');
+            }
+            final categories = snapshot.data ?? [];
+            if (categories.isEmpty) {
+              return const RefreshMessage('Chưa có danh mục');
+            }
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                final c = categories[index];
+                return ListTile(
+                  leading: const Icon(Icons.category),
+                  title: Text(c.name),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _edit(c),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _delete(c),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
+    );
+  }
+}
+
+// Controller nam trong State, dispose() khi dialog dong han
+// (dispose ngay sau showDialog se loi vi dialog con dang chay hieu ung dong).
+class _NameDialog extends StatefulWidget {
+  final String title;
+  final String initial;
+
+  const _NameDialog({required this.title, required this.initial});
+
+  @override
+  State<_NameDialog> createState() => _NameDialogState();
+}
+
+class _NameDialogState extends State<_NameDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: const InputDecoration(labelText: 'Tên danh mục'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Hủy'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _controller.text.trim()),
+          child: const Text('Lưu'),
+        ),
+      ],
     );
   }
 }

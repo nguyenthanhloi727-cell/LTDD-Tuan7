@@ -22,7 +22,7 @@
 - [x] UP1. Chỉ 1 tài khoản Admin + Admin quản lý (khóa/mở khóa) tài khoản
 - [x] UP2. Token: tự đăng xuất khi hết hạn/bị thu hồi + nút thu hồi token
 - [x] UP3. Số lượng + "Hết hàng" + chặn số âm + email không trùng + lỗi danh mục không tồn tại
-- [ ] UP4. Kéo xuống để tải lại + dispose TextEditingController
+- [x] UP4. Kéo xuống để tải lại + dispose TextEditingController
 
 ---
 
@@ -423,3 +423,7 @@ Người dùng tự kiểm tra:
   `AuthenticateController.Register`: kiểm trước bằng `Users.AnyAsync(NormalizedEmail)` (không dùng `FindByEmailAsync` vì DB cũ có thể trùng email → lỗi 500) → 400 "Email đã được sử dụng"; lỗi Identity map `DuplicateEmail` sang tiếng Việt.
   Mobile: `Product.quantity` (thiếu → 0); mới `widgets/stock_text.dart` (`StockText`: 0 → đỏ "Hết hàng", còn lại "Còn: n") dùng ở Main + Admin; mới `widgets/product_form_dialog.dart` (`ProductFormDialog` tự dispose controller, `digitsOnly`, pop ra `Product`). `AdminScreen._chooseCategory` → `_openForm([Product? p])` + FAB "Thêm sản phẩm"; `ProductService.createProduct` + `_readMessage` đọc lỗi 400.
   Đã test thật trên Xiaomi + curl, `TESTING.md` mục 7d. Cho UP4: `MainScreen` đã có `RefreshIndicator` (chỉ khi danh sách không rỗng), `AdminScreen` chưa có; dialog cũ ở CategoryScreen/LoginScreen… chưa soát dispose.
+- UP4 (xong): mới `widgets/refresh_message.dart` (`RefreshMessage(text)`: chữ giữa màn trong `ListView` + `AlwaysScrollableScrollPhysics` cao bằng màn) dùng cho lỗi và danh sách rỗng.
+  `MainScreen`, `AdminScreen`, `CategoryScreen`, `UserManagementScreen`: `RefreshIndicator(onRefresh: _reload)` bọc cả `FutureBuilder`; `ListView.builder` thêm `AlwaysScrollableScrollPhysics`; `_reload()` đổi thành `Future<void>` (await future, nuốt lỗi vì lỗi đã hiện trong FutureBuilder).
+  `CategoryScreen._askName` giờ mở `_NameDialog` (StatefulWidget riêng, dispose controller trong `dispose()`), không dispose ngay sau `showDialog` vì dialog còn chạy hiệu ứng đóng → lỗi "used after being disposed".
+  Đã test thật trên Xiaomi: tắt/bật backend + kéo ở Trang Admin, danh mục rỗng, Quản lý tài khoản, Trang User đều OK; `TESTING.md` mục 7e.
