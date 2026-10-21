@@ -7,7 +7,7 @@
 
 ## 1. Tiến độ
 
-- [ ] P0. Khởi tạo git + đẩy code tuần 6
+- [x] P0. Khởi tạo git + đẩy code tuần 6
 - [ ] P1. Backend: Identity + JWT + Role
 - [ ] P2. Flutter: dotenv + jwt_decoder + đăng nhập/đăng ký + tự đăng nhập
 - [ ] BT1. Đăng xuất
@@ -254,6 +254,7 @@ Người dùng tự kiểm tra (demo cho thầy):
 
 > Mỗi bước ghi 3–5 dòng ngay dưới đây, mới nhất ở dưới cùng. Phiên sau đọc mục này thay vì quét lại code.
 
-- P0 (dở, chưa `[x]`): tạo `backend/NguyenThanhLoi_2380601289` (Product, ApplicationDbContext, ProductsController CRUD, CORS "AllowAll", Swagger, cổng 5080) + `.sln`; DB `.\SQLEXPRESS` Windows Auth.
+- P0 (xong): tạo `backend/NguyenThanhLoi_2380601289` (Product, ApplicationDbContext, ProductsController CRUD, CORS "AllowAll", Swagger, cổng 5080) + `.sln`; DB `.\SQLEXPRESS` Windows Auth.
   Mobile `nguyenthanhloi_2380601289`: `config/config_url.dart` (baseUrl `http://10.0.2.2:5080`), `models/product.dart`, `services/product_service.dart`, `screens/main_screen.dart`; Manifest thêm INTERNET + usesCleartextTraffic. `flutter analyze` sạch.
   Đã cài .NET 8 SDK 8.0.426 (winget). `dotnet-ef` global là bản 10.0.8, dùng được với EF 8 → giữ nguyên. Migration `InitialProduct` + database update xong, `dotnet build backend` 0 lỗi.
+  Repo public: https://github.com/nguyenthanhloi727-cell/LTDD-Tuan7. Bước sau (P1): đổi `ApplicationDbContext` sang `IdentityDbContext<User>`, giữ `DbSet<Product>`.
