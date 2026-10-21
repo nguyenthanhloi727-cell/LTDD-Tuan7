@@ -29,6 +29,10 @@
 - [x] UP8. Nút hiện/ẩn mật khẩu + ảnh sản phẩm + login/register trả `status`, `message` (giống bài mẫu)
 - [x] UP9. Màn chi tiết sản phẩm (User) + nút "Xem chi tiết" ở Trang Admin
 - [x] UP10. Upload ảnh sản phẩm + dữ liệu mẫu
+- [ ] UP11. Theme chung + định dạng giá + thiết kế lại Đăng nhập / Đăng ký
+- [ ] UP12. Trang User có thanh tab dưới (Trang chủ / Marketplace / Tài khoản) + tab Tài khoản
+- [ ] UP13. Marketplace: lưới sản phẩm + tìm kiếm + lọc danh mục + sắp xếp
+- [ ] UP14. Home Screen: lời chào, ô tìm kiếm, danh mục, sản phẩm mới, còn hàng ít
 
 ---
 
@@ -440,6 +444,89 @@ Người dùng tự kiểm tra (UP8–UP10):
 - [ ] Trang User: sản phẩm có ảnh hiện ảnh, không có ảnh hiện icon; bấm sản phẩm → màn chi tiết
 - [ ] Trang Admin: nút 👁 mở chi tiết; Thêm/Sửa → "Chọn ảnh" → chọn ảnh trong máy → Lưu → ảnh hiện trong danh sách và chi tiết
 - [ ] Swagger login trả `status`, `message`, `token`
+
+---
+
+### Ghi chú chung UP11–UP14 (giao diện mới cho trang User, giống ý tưởng bài mẫu Home + Market của thầy)
+
+- **Chỉ sửa `mobile/`**, không sửa backend (API sản phẩm / danh mục đã đủ: `GET api/Products` có `imageUrl`, `quantity`, `categoryId`, `categoryName`; `GET api/Categories`).
+- Giữ nguyên tên class `MainScreen` (được gọi ở `main.dart` dòng ~41 và `LoginScreen._goToHome`) → không phải sửa điều hướng theo role. `AdminScreen` giữ chức năng như cũ, chỉ ăn theo theme mới.
+- Dùng lại thứ đã có, không viết lại: `ProductImage` (`widgets/product_image.dart`), `StockText`, `ProductDetailScreen(product:)`, `RefreshMessage`, `LogoutButton`, `BiometricOffButton`, `ProductService.getProducts()`, `CategoryService.getCategories()`, `isSessionExpired` / `handleSessionExpired` (`services/session.dart`) cho lỗi 401.
+- Mỗi màn có API: lỗi 401 → `handleSessionExpired(context)`; lỗi khác → hiện `RefreshMessage('$error')`; có kéo để tải lại (`RefreshIndicator` + `AlwaysScrollableScrollPhysics`), giống UP4.
+- Không thêm gói mới (trừ khi bước ghi rõ). Format giá tự viết, không cần `intl`.
+- Mỗi bước: `flutter analyze` sạch → test trên điện thoại/máy ảo (cách test xem memory / `TESTING.md` đầu file) → thêm mục `TESTING.md` (7i, 7j, 7k, 7l) + dòng UP mới trong bảng "Nâng cấp" của `README.md`.
+
+### UP11. Theme chung + định dạng giá + thiết kế lại Đăng nhập / Đăng ký
+> Đọc thêm mục **"Ghi chú chung UP11–UP14"** ngay phía trên UP11 (cùng mục 2) trước khi làm bước này.
+
+1. Mới `lib/theme/app_theme.dart`: `class AppTheme { static ThemeData light() }` — `ColorScheme.fromSeed(seedColor: Color(0xFF1877F2))` (xanh kiểu Facebook như bài mẫu), `useMaterial3: true`; `inputDecorationTheme`: `filled: true`, nền xám nhạt, bo góc 12, không viền (`OutlineInputBorder(borderSide: BorderSide.none)`), viền primary khi focus; `elevatedButtonTheme` / `filledButtonTheme`: cao 50, bo góc 12, chữ đậm; `cardTheme`: bo góc 12, elevation 0–1, `clipBehavior: Clip.antiAlias`; `appBarTheme`: nền trắng, chữ đậm, `centerTitle: false`.
+   `main.dart`: `theme: AppTheme.light()` thay cho `ThemeData(colorSchemeSeed: Colors.indigo, ...)`.
+2. Mới `lib/utils/format.dart`: `String formatPrice(num price)` → `20.990.000 đ` (tự chèn dấu chấm mỗi 3 số, không dùng `intl`). Thay mọi chỗ đang ghi `'${p.price.toStringAsFixed(0)} đ'` (grep `toStringAsFixed(0)} đ` trong `lib/`: `admin_screen.dart`, `product_detail_screen.dart`, `main_screen.dart`…). **Không** đổi ô nhập giá trong `ProductFormDialog` (vẫn nhập số trơn).
+3. `LoginScreen`: bỏ AppBar, bố cục giữa màn hình trong `SingleChildScrollView` + `SafeArea`: icon/logo (`Icons.shopping_bag` tròn màu primary) + chữ **"Smart Auth"** to đậm màu primary + dòng phụ "Đăng nhập để tiếp tục"; ô tên đăng nhập (`prefixIcon: Icons.person`), ô mật khẩu (`prefixIcon: Icons.lock`, giữ nút con mắt UP8); nút Đăng nhập rộng hết (`FilledButton`, giữ vòng xoay `_loading`); nút vân tay giữ nguyên chức năng (đặt dưới nút Đăng nhập, dạng `OutlinedButton.icon`); "Chưa có tài khoản? **Đăng ký**" ở dưới. **Giữ nguyên toàn bộ logic** (`_login`, `_callLogin`, `_goToHome`, vân tay).
+4. `RegisterScreen`: cùng phong cách (tiêu đề "Tạo tài khoản", các ô có `prefixIcon`: person, email, lock, badge, phone, sms), giữ nguyên logic OTP / smart_auth / nút SIM / nút con mắt.
+5. `TESTING.md` mục 7i; README bảng Nâng cấp thêm UP11.
+
+Commit: `feat: theme chung + dinh dang gia + giao dien dang nhap/dang ky` — add: `mobile/ TESTING.md README.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Màn Đăng nhập / Đăng ký có logo + "Smart Auth", ô nhập bo tròn có icon; đăng nhập, vân tay, đăng ký OTP vẫn chạy như cũ
+- [ ] Giá ở mọi màn hiện dạng `20.990.000 đ`
+
+### UP12. Trang User có thanh tab dưới (Trang chủ / Marketplace / Tài khoản) + tab Tài khoản
+> Đọc thêm mục **"Ghi chú chung UP11–UP14"** ngay phía trên UP11 (cùng mục 2) trước khi làm bước này.
+
+1. `main_screen.dart`: `MainScreen` thành **khung chứa tab** (StatefulWidget) với `NavigationBar` (Material 3) 3 tab: `Icons.home` "Trang chủ", `Icons.storefront` "Marketplace", `Icons.person` "Tài khoản". Dùng `IndexedStack` để giữ trạng thái từng tab (không tải lại khi đổi tab). Hàm public `void openMarketplace({String? query, int? categoryId})` để tab Trang chủ chuyển sang Marketplace kèm bộ lọc (UP14 dùng) — truyền qua `GlobalKey<MarketplaceScreenState>` hoặc callback, chọn cách đơn giản dễ giải thích.
+2. Danh sách sản phẩm hiện tại trong `MainScreen` **chuyển sang** file mới `lib/screens/marketplace_screen.dart` (`MarketplaceScreen`) — tạm giữ dạng danh sách như cũ (UP13 mới đổi sang lưới). Logic `_fetch` / `_reload` / xử lý 401 chuyển theo.
+3. Tạm tạo `lib/screens/home_screen.dart` (`HomeScreen`) đơn giản (lời chào + nút "Xem Marketplace") — UP14 làm đầy đủ.
+4. Mới `lib/screens/account_screen.dart` (`AccountScreen`): avatar tròn chữ cái đầu tên, **tên đăng nhập** + role (đọc từ token), các dòng `ListTile`: "Tắt đăng nhập vân tay" (dùng lại logic `BiometricOffButton` hoặc `BiometricService.disable()` + SnackBar), "Đăng xuất" (dùng lại logic `LogoutButton`: hỏi xác nhận → `AuthService().logout()` → `pushAndRemoveUntil` về `LoginScreen`).
+   `AuthService`: thêm `static const nameClaim = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';` + `String getUsername(String token)` (giống `getRole`; backend tạo claim `ClaimTypes.Name` nên tên claim trong JWT là chuỗi dài này — kiểm tra lại bằng `JwtDecoder.decode` nếu ra null).
+5. AppBar mỗi tab tự có tiêu đề riêng; bỏ nút Đăng xuất / tắt vân tay khỏi AppBar trang User (đã có trong tab Tài khoản).
+6. `TESTING.md` mục 7j; README thêm UP12, sửa dòng giới thiệu màn hình.
+
+Commit: `feat: trang User co tab Trang chu / Marketplace / Tai khoan` — add: `mobile/ TESTING.md README.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Đăng nhập User → có thanh tab dưới 3 tab; đổi tab qua lại không bị tải lại
+- [ ] Tab Tài khoản hiện đúng tên đăng nhập + role; Đăng xuất về màn Đăng nhập (Back không quay lại được); mở lại app vẫn vào đúng trang theo role (BT3)
+- [ ] Admin đăng nhập vẫn vào Trang Admin như cũ
+
+### UP13. Marketplace: lưới sản phẩm + tìm kiếm + lọc danh mục + sắp xếp
+> Đọc thêm mục **"Ghi chú chung UP11–UP14"** ngay phía trên UP11 (cùng mục 2) trước khi làm bước này.
+
+1. `MarketplaceScreen` đổi sang **lưới 2 cột** (`GridView.builder`, `SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio ~0.68)`), mỗi ô là widget mới `lib/widgets/product_card.dart` (`ProductCard(product, onTap)`): `Card` → ảnh vuông trên (`ProductImage` với `AspectRatio(1)`, sửa `ProductImage` nếu cần cho phép rộng theo ô — thêm tham số tùy chọn, không phá chỗ cũ), tên (tối đa 2 dòng, `ellipsis`), giá `formatPrice` màu primary đậm, `StockText`. Hết hàng: ảnh mờ (`Opacity 0.5`) + nhãn "Hết hàng". Bấm → `ProductDetailScreen`.
+2. Trên lưới: ô tìm kiếm (`TextField` có `prefixIcon: Icons.search`, nút xóa) lọc theo tên **không phân biệt hoa thường, bỏ dấu tiếng Việt** (tự viết hàm `removeDiacritics` trong `utils/format.dart`, ví dụ gõ "chuot" ra "Chuột không dây"); hàng `ChoiceChip` cuộn ngang: "Tất cả" + từng danh mục (từ `CategoryService.getCategories()`) + "Chưa phân loại"; nút sắp xếp (`PopupMenuButton` trên AppBar): Mới nhất (id giảm), Giá tăng dần, Giá giảm dần, Tên A→Z.
+   Lọc / tìm / sắp xếp làm ở app trên danh sách đã tải (không gọi API mỗi lần gõ). Hiện số kết quả ("12 sản phẩm"). Không có kết quả → "Không tìm thấy sản phẩm" + nút "Xóa bộ lọc".
+3. Hàm public `applyFilter({String? query, int? categoryId})` để tab Trang chủ (UP14) mở Marketplace với bộ lọc sẵn.
+4. Giữ kéo để tải lại (tải lại cả sản phẩm + danh mục), xử lý 401 như cũ.
+5. `TESTING.md` mục 7k; README thêm UP13.
+
+Commit: `feat: marketplace dang luoi + tim kiem + loc danh muc + sap xep` — add: `mobile/ TESTING.md README.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Marketplace hiện lưới 2 cột có ảnh, tên, giá `x.xxx.xxx đ`, tồn kho; sản phẩm hết hàng bị mờ
+- [ ] Gõ "chuot" / "IPHONE" tìm ra đúng; chọn chip danh mục chỉ còn sản phẩm danh mục đó; sắp xếp giá tăng/giảm đúng
+- [ ] Không có kết quả → thông báo + "Xóa bộ lọc"; kéo xuống tải lại được
+
+### UP14. Home Screen: lời chào, ô tìm kiếm, danh mục, sản phẩm mới, còn hàng ít
+> Đọc thêm mục **"Ghi chú chung UP11–UP14"** ngay phía trên UP11 (cùng mục 2) trước khi làm bước này.
+
+1. `HomeScreen` (thay bản tạm của UP12), cuộn dọc (`ListView` / `CustomScrollView`), tải song song sản phẩm + danh mục (`Future.wait`):
+   - **Đầu trang**: "Xin chào, {tên đăng nhập}" (dùng `AuthService.getUsername` của UP12) + dòng phụ "Hôm nay bạn muốn mua gì?".
+   - **Ô tìm kiếm giả** (chỉ đọc, bấm vào hoặc gõ rồi Enter) → chuyển sang tab Marketplace với `query` (gọi `openMarketplace` của `MainScreen` / `applyFilter` của UP13).
+   - **Banner**: 1 thẻ màu primary (gradient) chữ "Hàng mới về — Xem ngay" → mở Marketplace sắp xếp Mới nhất. (Không dùng ảnh mạng.)
+   - **Danh mục**: hàng ngang các ô tròn (icon theo tên: "Điện thoại" → `Icons.smartphone`, "Laptop" → `Icons.laptop`, "Phụ kiện" → `Icons.headphones`, khác → `Icons.category`) + tên; bấm → Marketplace lọc danh mục đó.
+   - **Sản phẩm mới**: tiêu đề + "Xem tất cả" (→ Marketplace); danh sách ngang 6 sản phẩm id lớn nhất, dùng `ProductCard` (UP13) rộng ~160.
+   - **Sắp hết hàng**: sản phẩm có `0 < quantity <= 5`, dạng `ListTile` có ảnh nhỏ + "Chỉ còn n"; không có thì ẩn mục.
+   - Bấm sản phẩm bất kỳ → `ProductDetailScreen`.
+2. Kéo để tải lại, xử lý 401, đang tải hiện `CircularProgressIndicator`, lỗi hiện `RefreshMessage`.
+3. `TESTING.md` mục 7l; README thêm UP14; ảnh chụp màn hình không bắt buộc.
+
+Commit: `feat: home screen` — add: `mobile/ TESTING.md README.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Tab Trang chủ: lời chào đúng tên, banner, hàng danh mục, "Sản phẩm mới", "Sắp hết hàng"
+- [ ] Bấm danh mục / ô tìm kiếm / "Xem tất cả" → sang tab Marketplace đã lọc đúng; bấm sản phẩm → chi tiết
+- [ ] Admin thêm sản phẩm mới → User kéo tải lại Trang chủ thấy ngay trong "Sản phẩm mới"
 
 ---
 
