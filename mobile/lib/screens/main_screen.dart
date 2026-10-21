@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/product.dart';
 import '../services/product_service.dart';
+import '../widgets/logout_button.dart';
 
 // Trang User: danh sach san pham.
 class MainScreen extends StatefulWidget {
@@ -31,7 +32,10 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Danh sách sản phẩm')),
+      appBar: AppBar(
+        title: const Text('Danh sách sản phẩm'),
+        actions: const [LogoutButton()],
+      ),
       body: FutureBuilder<List<Product>>(
         future: _futureProducts,
         builder: (context, snapshot) {
