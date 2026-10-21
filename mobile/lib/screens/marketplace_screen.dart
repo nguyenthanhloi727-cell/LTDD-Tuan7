@@ -88,13 +88,14 @@ class MarketplaceScreenState extends State<MarketplaceScreen> {
   }
 
   // Goi tu MainScreen.openMarketplace (tab Trang chu, UP14): loc theo ten / danh muc.
-  // Goi khong tham so = bo loc.
-  void applyFilter({String? query, int? categoryId}) {
+  // Goi khong tham so = bo loc. sort != null thi doi luon kieu sap xep (banner Trang chu).
+  void applyFilter({String? query, int? categoryId, ProductSort? sort}) {
     final q = query?.trim() ?? '';
     _searchController.text = q;
     setState(() {
       _query = q.isEmpty ? null : q;
       _categoryId = categoryId;
+      if (sort != null) _sort = sort;
     });
   }
 

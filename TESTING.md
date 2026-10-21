@@ -253,6 +253,18 @@ DB chưa có sản phẩm nào → backend tự tạo 3 danh mục + 6 sản ph�
 | 7k.6 | Kéo xuống để tải lại; tắt backend rồi kéo | Có vòng tải, tải lại cả sản phẩm + danh mục; backend tắt thì hiện lỗi, bật lại kéo tiếp là có dữ liệu |
 | 7k.7 | Bấm một ô sản phẩm | Mở màn Chi tiết sản phẩm như UP9 |
 
+## 7l. Trang chủ (UP14)
+
+| # | Thao tác | Kết quả mong đợi |
+|---|---|---|
+| 7l.1 | Đăng nhập `user` → tab **Trang chủ** | "Xin chào, user" + "Hôm nay bạn muốn mua gì?", ô tìm kiếm, banner xanh **Hàng mới về — Xem ngay →**, hàng danh mục tròn (Điện thoại 📱, Laptop 💻, Phụ kiện 🎧, khác icon danh mục), "Sản phẩm mới" (tối đa 6, cuộn ngang, mới nhất trước) |
+| 7l.2 | Có sản phẩm số lượng 1–5 | Mục **Sắp hết hàng**: ảnh nhỏ, tên, giá, chữ đỏ "Chỉ còn n" (ít nhất lên trước); không có sản phẩm nào như vậy thì mục bị ẩn; sản phẩm hết hàng (0) không nằm ở đây |
+| 7l.3 | Bấm một danh mục | Sang tab Marketplace, chip danh mục đó đang chọn, chỉ còn sản phẩm của danh mục đó |
+| 7l.4 | Gõ `iphone` vào ô tìm kiếm Trang chủ → Enter | Sang Marketplace, ô tìm đã điền `iphone`, đã lọc; ô ở Trang chủ được xóa trắng |
+| 7l.5 | Bấm **Xem tất cả** / bấm banner | Sang Marketplace, bỏ hết bộ lọc; banner thì sắp xếp **Mới nhất** |
+| 7l.6 | Bấm một sản phẩm ở "Sản phẩm mới" hoặc "Sắp hết hàng" | Mở màn Chi tiết sản phẩm |
+| 7l.7 | Admin thêm sản phẩm mới → User kéo xuống tải lại Trang chủ | Sản phẩm mới hiện đầu "Sản phẩm mới"; tắt backend rồi kéo thì hiện lỗi, bật lại kéo tiếp là có dữ liệu |
+
 ## 8. Kiểm tra code trước khi nộp
 
 ```bash
