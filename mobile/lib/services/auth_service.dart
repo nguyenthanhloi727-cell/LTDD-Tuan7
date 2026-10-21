@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,7 +72,6 @@ class AuthService {
   // Co "Admin" thi tra "Admin", con lai tra "User".
   String getRole(String token) {
     final decoded = JwtDecoder.decode(token);
-    debugPrint('JWT payload: $decoded'); // TODO xoa truoc khi nop
     final role = decoded[roleClaim] ?? decoded['role'];
     final roles = role is List ? role : [role];
     return roles.contains('Admin') ? 'Admin' : 'User';

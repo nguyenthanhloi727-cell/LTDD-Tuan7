@@ -18,7 +18,7 @@
 - [x] BT7. Admin thêm/xóa/sửa danh mục
 - [x] BIO. Đăng nhập nhanh bằng vân tay với biometric_storage
 - [x] BT5. smart_auth (điểm cộng)
-- [ ] FINAL. README + soát repo + tag nộp bài
+- [x] FINAL. README + soát repo + tag nộp bài
 
 ---
 
@@ -301,3 +301,7 @@ Người dùng tự kiểm tra (demo cho thầy):
   `RegisterScreen`: ô "Số điện thoại (không bắt buộc)" (`_phoneController`), nút `Icons.sim_card` chỉ hiện khi `Platform.isAndroid` → `_pickPhoneNumber()` gọi `SmartAuth.instance.requestPhoneNumberHint()` (`hasData` điền số, `hasError` báo SnackBar, hủy thì bỏ qua).
   `AuthService.register(..., {String? phoneNumber})` gửi key `phoneNumber`. Backend `RegisterModel.PhoneNumber` → `User.PhoneNumber` (cột Identity có sẵn, không migration).
   Cho FINAL: còn `debugPrint('JWT payload: ...')` có TODO trong `AuthService.getRole` cần xóa.
+- FINAL (xong): xóa `debugPrint('JWT payload ...')` trong `AuthService.getRole` + bỏ import `flutter/foundation.dart` không còn dùng.
+  Mới `README.md` ở gốc: bảng BT1–BT8 + vân tay, môi trường, chạy backend (cổng 5080, tự `Database.Migrate()`, fallback LocalDB), chạy mobile (`.env` máy ảo / điện thoại qua `adb reverse`).
+  Tài khoản test không seed sẵn: README hướng dẫn tạo `admin`/`user` qua Swagger `POST /api/Authenticate/register`.
+  Soát: không có bin/obj/build/.dart_tool trong git; `dotnet build` và `flutter analyze` sạch. Tag nộp bài: `tuan7-nop`.
