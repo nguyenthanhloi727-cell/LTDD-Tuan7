@@ -27,9 +27,21 @@ class AuthService {
     return _readError(response, 'Đăng nhập thất bại');
   }
 
-  // Goi API register. Tra ve null neu ok, nguoc lai la thong bao loi.
+  // UP5: yeu cau backend gui ma OTP toi SDT. Tra ve null neu ok, nguoc lai la thong bao loi.
+  Future<String?> sendOtp(String phoneNumber) async {
+    final response = await http.post(
+      Uri.parse(ConfigUrl.sendOtp),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'phoneNumber': phoneNumber}),
+    );
+    if (response.statusCode == 200) return null;
+    return _readError(response, 'Gửi mã OTP thất bại');
+  }
+
+  // Goi API register (kem ma OTP). Tra ve null neu ok, nguoc lai la thong bao loi.
   Future<String?> register(String username, String email, String password,
-      String initials, {String? phoneNumber}) async {
+      String initials,
+      {required String phoneNumber, required String otp}) async {
     final response = await http.post(
       Uri.parse(ConfigUrl.register),
       headers: {'Content-Type': 'application/json'},
@@ -39,7 +51,7 @@ class AuthService {
         'password': password,
         'initials': initials,
         'phoneNumber': phoneNumber,
-        'role': 'User',
+        'otp': otp,
       }),
     );
     if (response.statusCode == 200) return null;

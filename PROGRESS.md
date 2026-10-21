@@ -23,6 +23,7 @@
 - [x] UP2. Token: tự đăng xuất khi hết hạn/bị thu hồi + nút thu hồi token
 - [x] UP3. Số lượng + "Hết hàng" + chặn số âm + email không trùng + lỗi danh mục không tồn tại
 - [x] UP4. Kéo xuống để tải lại + dispose TextEditingController
+- [x] UP5. Đăng ký bắt buộc OTP qua SMS (smart_auth SMS User Consent tự điền mã)
 
 ---
 
@@ -353,6 +354,23 @@ Người dùng tự kiểm tra:
 
 ---
 
+### UP5. Đăng ký bắt buộc OTP qua SMS (smart_auth SMS User Consent tự điền mã)
+
+Không thuê dịch vụ SMS: backend chỉ tạo mã và in ra log (kèm sẵn lệnh `adb emu sms send ...`), người test tự gửi SMS giả lập vào máy ảo. App dùng smart_auth bắt SMS đó và tự điền mã.
+
+1. Backend: mới `Services/OtpService.cs` (lưu mã trong `IMemoryCache`): mã 6 số, hết hạn 5 phút, gửi lại sau 60 giây, sai 5 lần thì hủy mã; chuẩn hóa SĐT (`+84...` → `0...`).
+2. `AuthenticateController`: mới `POST api/Authenticate/send-otp` `{ phoneNumber }`; `Register` bắt buộc `phoneNumber` + `otp`, sai/hết hạn → 400, SĐT đã dùng → 400, đúng → `PhoneNumberConfirmed = true`.
+3. Mobile: `ConfigUrl.sendOtp`, `AuthService.sendOtp(phone)`, `register(..., otp)`. `RegisterScreen`: SĐT bắt buộc, ô "Mã OTP" + nút "Gửi mã"; gửi xong gọi `SmartAuth.instance.getSmsWithUserConsentApi()` → có SMS thì tự điền mã; `dispose` gỡ listener.
+4. Cập nhật `README.md`, `TESTING.md` (đăng ký qua Swagger phải gọi `send-otp` trước; mục mới 7f).
+
+Commit: `feat: dang ky xac minh OTP qua SMS (smart_auth)` — add: `backend/ mobile/ README.md TESTING.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Máy ảo: Đăng ký → nhập SĐT → "Gửi mã" → chạy lệnh `adb emu sms send` trong log backend → hiện hộp "Cho phép đọc tin nhắn" → Cho phép → ô OTP tự điền → Đăng ký thành công
+- [ ] Nhập sai OTP / không gửi mã → báo lỗi, không tạo tài khoản; bấm "Gửi mã" 2 lần liền → báo chờ
+
+---
+
 ## 3. Nhật ký bàn giao
 
 > Mỗi bước ghi 3–5 dòng ngay dưới đây, mới nhất ở dưới cùng. Phiên sau đọc mục này thay vì quét lại code.
@@ -427,3 +445,7 @@ Người dùng tự kiểm tra:
   `MainScreen`, `AdminScreen`, `CategoryScreen`, `UserManagementScreen`: `RefreshIndicator(onRefresh: _reload)` bọc cả `FutureBuilder`; `ListView.builder` thêm `AlwaysScrollableScrollPhysics`; `_reload()` đổi thành `Future<void>` (await future, nuốt lỗi vì lỗi đã hiện trong FutureBuilder).
   `CategoryScreen._askName` giờ mở `_NameDialog` (StatefulWidget riêng, dispose controller trong `dispose()`), không dispose ngay sau `showDialog` vì dialog còn chạy hiệu ứng đóng → lỗi "used after being disposed".
   Đã test thật trên Xiaomi: tắt/bật backend + kéo ở Trang Admin, danh mục rỗng, Quản lý tài khoản, Trang User đều OK; `TESTING.md` mục 7e.
+- UP5 (xong): mới `Services/OtpService.cs` (Singleton, `IMemoryCache` key `otp:<sđt>`): `NormalizePhone` (`+84`/`84` → `0`, phải 10 số), `Send(phone)` trả 0 hoặc số giây phải đợi (60s), mã 6 số hạn 5 phút in ra log `[OTP] ... adb emu sms send ...`; `Verify` (sai 5 lần xóa mã), `Remove` sau khi đăng ký xong. `Program.cs`: `AddMemoryCache()` + `AddSingleton<OtpService>()`.
+  `AuthenticateController`: mới `POST send-otp` (`SendOtpModel.PhoneNumber`; SĐT sai/đã dùng → 400, gửi lại sớm → 429); `Register` bắt buộc `PhoneNumber` + `Otp` (`RegisterModel.Otp`), SĐT trùng → 400, lưu SĐT đã chuẩn hóa + `PhoneNumberConfirmed = true`.
+  Mobile: `ConfigUrl.sendOtp`; `AuthService.sendOtp(phone)`, `register(..., {required phoneNumber, required otp})` (bỏ key `role`). `RegisterScreen`: `_otpController`, nút "Gửi mã" → `_sendOtp` → `_waitForOtpSms` (`SmartAuth.instance.getSmsWithUserConsentApi(matcher: r'\d{6}')`), `dispose` gọi `removeUserConsentApiListener` nếu đang chờ.
+  README/TESTING: Swagger register phải `send-otp` trước (mã xem log backend); TESTING mục 7f. Tự điền mã qua SMS chưa test trên máy này (không có emulator); DB máy này thêm user test `otp7325`, `app2802`.

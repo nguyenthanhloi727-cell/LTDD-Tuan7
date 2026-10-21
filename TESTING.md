@@ -11,10 +11,14 @@ Làm lần lượt từ trên xuống. Mỗi mục ghi **Làm gì** và **Kết 
 
 Tài khoản **Admin** có sẵn: `admin` / `Admin@123` (backend tự tạo lúc chạy nếu chưa có Admin). Chỉ cần tạo tài khoản User:
 
-`POST /api/Authenticate/register` → **Try it out**, gửi body:
+Đăng ký cần mã OTP (UP5):
+
+1. `POST /api/Authenticate/send-otp` → **Try it out**, gửi `{ "phoneNumber": "0900000001" }`.
+2. Xem cửa sổ chạy backend: có dòng `[OTP] 0900000001: 123456 | ...` → mã là 6 số đó (hạn 5 phút).
+3. `POST /api/Authenticate/register`, gửi body (thay `<mã>`):
 
 ```json
-{ "username": "user", "email": "user@test.com", "password": "User@123", "initials": "US" }
+{ "username": "user", "email": "user@test.com", "password": "User@123", "initials": "US", "phoneNumber": "0900000001", "otp": "<mã>" }
 ```
 
 Kết quả đúng: `200` `{ "message": "Đăng ký thành công" }`. Gửi lại lần 2 → `400` "Tên đăng nhập đã tồn tại".
@@ -49,7 +53,7 @@ Kết quả đúng: `200` `{ "message": "Đăng ký thành công" }`. Gửi lạ
 |---|--------|--------------|
 | 1.1 | Màn Đăng nhập → bấm "Chưa có tài khoản? Đăng ký" | Mở màn **Đăng ký** |
 | 1.2 | (Android, BT5) Bấm icon SIM "Lấy số từ SIM" ở ô số điện thoại | Hiện hộp chọn số của Google; chọn số → số được điền vào ô. Bấm hủy → không có gì xảy ra |
-| 1.3 | Điền tên đăng nhập `user2`, email, mật khẩu `User2@123`, tên viết tắt → Đăng ký | SnackBar "Đăng ký thành công, hãy đăng nhập", quay về màn Đăng nhập |
+| 1.3 | Điền tên đăng nhập `user2`, email, mật khẩu `User2@123`, tên viết tắt, số điện thoại → bấm **Gửi mã** → nhập mã OTP (xem mục 7f) → Đăng ký | SnackBar "Đăng ký thành công, hãy đăng nhập", quay về màn Đăng nhập |
 | 1.4 | Đăng ký lại `user2` | Báo lỗi "Tên đăng nhập đã tồn tại" |
 
 ## 2. Đăng nhập theo role (BT2)
@@ -124,7 +128,7 @@ Trên app: đang ở MainScreen mà token bị mất hiệu lực (401) → app 
 
 | # | Làm gì | Kết quả đúng |
 |---|--------|--------------|
-| 7b.1 | Swagger register `{ "username": "hacker", "email": "h@test.com", "password": "Hacker@123", "initials": "HK", "role": "Admin" }` → login `hacker` trên app | Vào **Danh sách sản phẩm** (vẫn là User) |
+| 7b.1 | Swagger `send-otp` `{ "phoneNumber": "0900000002" }` → register `{ "username": "hacker", "email": "h@test.com", "password": "Hacker@123", "initials": "HK", "phoneNumber": "0900000002", "otp": "<mã trong log>", "role": "Admin" }` → login `hacker` trên app | Vào **Danh sách sản phẩm** (vẫn là User) |
 | 7b.2 | Đăng nhập `admin` → icon "Quản lý tài khoản" | Thấy danh sách tài khoản; dòng `admin` không có nút khóa |
 | 7b.3 | Bấm khóa `hacker` → xác nhận | Dòng `hacker` hiện "Đang khóa" |
 | 7b.4 | Đăng xuất, đăng nhập `hacker` | Báo **"Tài khoản đã bị khóa"** |
@@ -172,6 +176,22 @@ Trang User, Trang Admin, Quản lý danh mục, Quản lý tài khoản đều c
 | 7e.2 | Bật lại backend → kéo xuống ở màn lỗi | Danh sách tải lại bình thường |
 | 7e.3 | Màn có danh sách rỗng (vd. xóa hết danh mục) → kéo xuống | Hiện vòng xoay tải lại, không bị kẹt |
 | 7e.4 | Quản lý danh mục → mở dialog Thêm/Sửa nhiều lần, Hủy/Lưu | Không có lỗi "used after being disposed" trong log |
+
+## 7f. Đăng ký bằng mã OTP qua SMS (UP5, smart_auth)
+
+Không thuê dịch vụ SMS: backend tạo mã 6 số (hạn 5 phút) và in ra log dạng
+`[OTP] 0900000003: 123456 | Gia lap gui SMS: adb emu sms send 0900000003 "Ma OTP dang ky cua ban la 123456"`.
+Người test tự "gửi SMS" bằng lệnh đó (máy ảo), app dùng smart_auth (SMS User Consent API) đọc tin và tự điền mã.
+
+| # | Làm gì | Kết quả đúng |
+|---|--------|--------------|
+| 7f.1 | **Máy ảo**: màn Đăng ký → điền thông tin + SĐT `0900000003` → bấm **Gửi mã** | SnackBar "Đã gửi mã OTP..."; log backend có dòng `[OTP]` |
+| 7f.2 | Copy lệnh `adb emu sms send ...` trong log, chạy ở Terminal (hoặc emulator ⋯ → Phone → gửi SMS cùng nội dung) | Hiện hộp **"Cho phép ... đọc tin nhắn"** |
+| 7f.3 | Bấm **Cho phép** | Ô "Mã OTP" tự điền 6 số, SnackBar "Đã tự điền mã OTP từ SMS" → bấm Đăng ký → thành công |
+| 7f.4 | Bấm **Gửi mã** lần nữa ngay sau đó | Báo "Vui lòng đợi ... giây rồi gửi lại mã" |
+| 7f.5 | Nhập mã sai → Đăng ký | Báo "Mã OTP không đúng hoặc đã hết hạn", không tạo tài khoản |
+| 7f.6 | Đăng ký tài khoản khác bằng SĐT đã dùng | Bấm Gửi mã → "Số điện thoại đã được sử dụng" |
+| 7f.7 | **Điện thoại thật**: lấy mã trong log backend, gõ tay vào ô OTP (hoặc nhờ máy khác nhắn tin chứa mã tới số mình — người gửi không nằm trong danh bạ) | Đăng ký thành công |
 
 ## 8. Kiểm tra code trước khi nộp
 
