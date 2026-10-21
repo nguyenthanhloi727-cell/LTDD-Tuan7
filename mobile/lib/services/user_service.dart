@@ -9,12 +9,14 @@ import 'product_service.dart' show ApiException;
 
 // Goi API Quan ly tai khoan (chi Admin).
 class UserService {
-  // Header co token: Authorization: Bearer <token>
+  // Header co token: Authorization: Bearer <token>.
+  // Token het han theo exp -> bao 401 luon, khong goi API.
   Future<Map<String, String>> _headers() async {
-    final token = await AuthService().getToken();
+    final token = await AuthService().getValidToken();
+    if (token == null) throw ApiException(401, 'Phiên đăng nhập hết hạn');
     return {
       'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
+      'Authorization': 'Bearer $token',
     };
   }
 
@@ -59,5 +61,23 @@ class UserService {
       headers: await _headers(),
     );
     _check(response, 'mở khóa tài khoản');
+  }
+
+  // Admin "Buoc dang xuat": moi token cu cua user do bi 401.
+  Future<void> revoke(String id) async {
+    final response = await http.post(
+      Uri.parse('${ConfigUrl.users}/$id/revoke'),
+      headers: await _headers(),
+    );
+    _check(response, 'buộc đăng xuất');
+  }
+
+  // Tu thu hoi token cua minh (nut demo het han token).
+  Future<void> revokeMe() async {
+    final response = await http.post(
+      Uri.parse('${ConfigUrl.users}/me/revoke'),
+      headers: await _headers(),
+    );
+    _check(response, 'thu hồi token');
   }
 }

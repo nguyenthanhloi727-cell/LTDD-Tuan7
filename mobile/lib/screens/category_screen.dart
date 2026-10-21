@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/category.dart';
 import '../services/category_service.dart';
+import '../services/session.dart';
 
 // Trang Admin: quan ly danh muc (them, sua, xoa).
 class CategoryScreen extends StatefulWidget {
@@ -18,17 +19,32 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   void initState() {
     super.initState();
-    _futureCategories = _service.getCategories();
+    _futureCategories = _fetch();
+  }
+
+  // Goi API; 401 (het han / bi thu hoi) -> ve man Dang nhap.
+  Future<List<Category>> _fetch() async {
+    try {
+      return await _service.getCategories();
+    } catch (e) {
+      if (mounted && isSessionExpired(e)) await handleSessionExpired(context);
+      rethrow;
+    }
   }
 
   void _reload() {
     setState(() {
-      _futureCategories = _service.getCategories();
+      _futureCategories = _fetch();
     });
   }
 
+  // 401 -> ve man Dang nhap, loi khac -> SnackBar.
   void _showError(Object e) {
     if (!mounted) return;
+    if (isSessionExpired(e)) {
+      handleSessionExpired(context);
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$e')),
     );

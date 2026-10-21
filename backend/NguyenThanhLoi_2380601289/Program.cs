@@ -48,6 +48,31 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]!))
     };
+    // Token dung chu ky van bi tu choi (401) neu: user khong con, dang bi khoa,
+    // hoac claim "stamp" khac SecurityStamp trong DB (Admin da thu hoi / khoa).
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var userManager = context.HttpContext.RequestServices
+                .GetRequiredService<UserManager<User>>();
+            var username = context.Principal?.Identity?.Name;
+            var user = username == null ? null : await userManager.FindByNameAsync(username);
+            if (user == null)
+            {
+                context.Fail("Tài khoản không tồn tại");
+                return;
+            }
+            if (await userManager.IsLockedOutAsync(user))
+            {
+                context.Fail("Tài khoản đã bị khóa");
+                return;
+            }
+            var stamp = context.Principal!.FindFirst("stamp")?.Value;
+            if (stamp != await userManager.GetSecurityStampAsync(user))
+                context.Fail("Token đã bị thu hồi");
+        }
+    };
 });
 
 builder.Services.AddControllers();

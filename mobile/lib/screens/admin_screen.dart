@@ -4,6 +4,8 @@ import '../models/category.dart';
 import '../models/product.dart';
 import '../services/category_service.dart';
 import '../services/product_service.dart';
+import '../services/session.dart';
+import '../services/user_service.dart';
 import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
 import 'category_screen.dart';
@@ -26,13 +28,52 @@ class _AdminScreenState extends State<AdminScreen> {
   @override
   void initState() {
     super.initState();
-    _futureProducts = _productService.getProducts();
+    _futureProducts = _fetch();
+  }
+
+  // Goi API; 401 (het han / bi thu hoi) -> ve man Dang nhap.
+  Future<List<Product>> _fetch() async {
+    try {
+      return await _productService.getProducts();
+    } catch (e) {
+      if (mounted && isSessionExpired(e)) await handleSessionExpired(context);
+      rethrow;
+    }
   }
 
   void _reload() {
     setState(() {
-      _futureProducts = _productService.getProducts();
+      _futureProducts = _fetch();
     });
+  }
+
+  // Nut demo: thu hoi token cua chinh minh roi tai lai -> API tra 401 -> ve man Dang nhap.
+  Future<void> _expireMyToken() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Làm hết hạn token?'),
+        content: const Text(
+            'Token hiện tại sẽ bị thu hồi, app sẽ quay về màn Đăng nhập.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Đồng ý'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await UserService().revokeMe();
+      _reload();
+    } catch (e) {
+      _handleError(e);
+    }
   }
 
   Future<void> _openCategories() async {
@@ -49,7 +90,7 @@ class _AdminScreenState extends State<AdminScreen> {
     try {
       categories = await _categoryService.getCategories();
     } catch (e) {
-      _showMessage('$e');
+      _handleError(e);
       return;
     }
     if (!mounted) return;
@@ -101,13 +142,23 @@ class _AdminScreenState extends State<AdminScreen> {
       ));
       _reload();
     } catch (e) {
-      _showMessage('$e');
+      _handleError(e);
     }
   }
 
   void _showMessage(String text) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  // 401 -> ve man Dang nhap, loi khac -> SnackBar.
+  void _handleError(Object e) {
+    if (!mounted) return;
+    if (isSessionExpired(e)) {
+      handleSessionExpired(context);
+    } else {
+      _showMessage('$e');
+    }
   }
 
   @override
@@ -128,6 +179,11 @@ class _AdminScreenState extends State<AdminScreen> {
               context,
               MaterialPageRoute(builder: (_) => const UserManagementScreen()),
             ),
+          ),
+          IconButton(
+            tooltip: 'Làm hết hạn token (demo)',
+            icon: const Icon(Icons.timer_off),
+            onPressed: _expireMyToken,
           ),
           const BiometricOffButton(),
           const LogoutButton(),

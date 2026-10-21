@@ -132,6 +132,21 @@ Trên app: đang ở MainScreen mà token bị mất hiệu lực (401) → app 
 | 7b.6 | Swagger: token của `user` gọi `GET /api/Users` | `403` |
 | 7b.7 | Swagger: token `admin` gọi `POST /api/Users/{id của admin}/lock` | `400` "Không thể khóa tài khoản Admin" |
 
+## 7c. Token hết hạn / bị thu hồi (UP2)
+
+Token có claim `stamp`; backend so với SecurityStamp trong DB, khác (bị thu hồi), user bị khóa hoặc hết `exp` → `401` → app tự về màn Đăng nhập + SnackBar "Phiên đăng nhập hết hạn, hãy đăng nhập lại".
+Token đăng nhập **trước** khi cập nhật UP2 không có `stamp` → cũng 401, đăng nhập lại là xong.
+
+| # | Làm gì | Kết quả đúng |
+|---|--------|--------------|
+| 7c.1 | Đăng nhập `admin` → icon đồng hồ gạch chéo "Làm hết hạn token (demo)" → Đồng ý | Về màn **Đăng nhập**, có SnackBar |
+| 7c.2 | Điện thoại đăng nhập `user`. Admin (Swagger hoặc máy khác) → Quản lý tài khoản → nút "Buộc đăng xuất" dòng `user` | User kéo tải lại danh sách → về màn **Đăng nhập** |
+| 7c.3 | `user` đang đăng nhập; Admin khóa `user` | User kéo tải lại → về màn Đăng nhập; đăng nhập lại báo **"Tài khoản đã bị khóa"** |
+| 7c.4 | Swagger: copy token `user` → Admin gọi `POST /api/Users/{id}/revoke` → dùng token cũ gọi `GET /api/Products` | `401` |
+| 7c.5 | Swagger: token `user` gọi `POST /api/Users/me/revoke` → gọi lại `GET /api/Products` bằng token đó | `200` rồi `401` |
+
+Vân tay: sau khi bị thu hồi vẫn đăng nhập vân tay được (gọi login lấy token mới), trừ khi tài khoản bị khóa.
+
 ## 8. Kiểm tra code trước khi nộp
 
 ```bash

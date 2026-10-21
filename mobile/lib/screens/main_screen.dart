@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../models/product.dart';
-import '../services/auth_service.dart';
 import '../services/product_service.dart';
+import '../services/session.dart';
 import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
-import 'login_screen.dart';
 
 // Trang User: danh sach san pham.
 class MainScreen extends StatefulWidget {
@@ -32,13 +31,7 @@ class _MainScreenState extends State<MainScreen> {
     } on ApiException catch (e) {
       if (!mounted) rethrow;
       if (e.statusCode == 401) {
-        await AuthService().logout();
-        if (!mounted) rethrow;
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-          (route) => false,
-        );
+        await handleSessionExpired(context);
       } else if (e.statusCode == 403) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Không có quyền')),
