@@ -4,6 +4,7 @@ import '../models/category.dart';
 import '../models/product.dart';
 import '../services/category_service.dart';
 import '../services/product_service.dart';
+import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
 import 'category_screen.dart';
 
@@ -119,6 +120,7 @@ class _AdminScreenState extends State<AdminScreen> {
             icon: const Icon(Icons.category),
             onPressed: _openCategories,
           ),
+          const BiometricOffButton(),
           const LogoutButton(),
         ],
       ),

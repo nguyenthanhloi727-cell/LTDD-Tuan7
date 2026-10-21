@@ -16,7 +16,7 @@
 - [x] BT4. Phân quyền API danh sách sản phẩm
 - [x] BT6+8. Category + Product.CategoryId nullable + xóa danh mục thì set null
 - [x] BT7. Admin thêm/xóa/sửa danh mục
-- [ ] BIO. Đăng nhập nhanh bằng vân tay với biometric_storage
+- [x] BIO. Đăng nhập nhanh bằng vân tay với biometric_storage
 - [ ] BT5. smart_auth (điểm cộng)
 - [ ] FINAL. README + soát repo + tag nộp bài
 
@@ -293,3 +293,7 @@ Người dùng tự kiểm tra (demo cho thầy):
   Mới `screens/category_screen.dart` (`CategoryScreen`: FAB thêm, sửa/xóa qua dialog, xóa có câu "Sản phẩm trong danh mục này sẽ thành Chưa phân loại").
   `AdminScreen` đổi sang StatefulWidget: danh sách sản phẩm + danh mục, bấm sản phẩm → dialog `DropdownButton<int?>` ("Không có" = null) → `updateProduct`; AppBar nút `Icons.category` mở `CategoryScreen`. `MainScreen` (User) không đổi.
   Cho BIO/BT5: chưa có form thêm/sửa sản phẩm đầy đủ (chỉ đổi danh mục); `_headers()` đang lặp ở 2 service.
+- BIO (xong): gói `biometric_storage: ^5.0.1`. Android: `minSdk = maxOf(flutter.minSdkVersion, 23)`, `MainActivity : FlutterFragmentActivity`, `LaunchTheme`/`NormalTheme` parent `Theme.AppCompat(.Light).NoActionBar` (values + values-night); iOS `NSFaceIDUsageDescription`.
+  `android/build.gradle.kts`: `afterEvaluate` ép `compileSdk = 36` cho subproject `biometric_storage` (plugin khai 31, androidx.biometric cần ≥ 33) — BT5 sửa gradle thì giữ đoạn này.
+  Mới `services/biometric_service.dart` (`BiometricService`: `isSupported`, `isEnabled`, `saveCredentials`, `readCredentials`, `disable`; storage `login_credentials` lưu JSON username/password, flag prefs `biometric_enabled`). Mới `widgets/biometric_off_button.dart` (`BiometricOffButton`, gắn AppBar `MainScreen` + `AdminScreen`).
+  `LoginScreen`: tách `_callLogin` (trả record `error`, `connectionError`) + `_goToHome` (điều hướng theo role); login mật khẩu ok mà chưa bật → hỏi bật; `_loginWithBiometric` bị API từ chối → `disable()`. `LogoutButton` không đụng dữ liệu vân tay.
