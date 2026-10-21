@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/app_user.dart';
 import '../services/session.dart';
 import '../services/user_service.dart';
+import '../widgets/refresh_message.dart';
 
 // Trang Admin: xem danh sach tai khoan, khoa / mo khoa tai khoan User.
 class UserManagementScreen extends StatefulWidget {
@@ -32,10 +33,15 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
   }
 
-  void _reload() {
+  Future<void> _reload() async {
     setState(() {
       _futureUsers = _fetch();
     });
+    try {
+      await _futureUsers;
+    } catch (_) {
+      // Loi da hien trong FutureBuilder.
+    }
   }
 
   // 401 -> ve man Dang nhap, con lai -> SnackBar.
@@ -119,57 +125,61 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Quản lý tài khoản')),
-      body: FutureBuilder<List<AppUser>>(
-        future: _futureUsers,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('${snapshot.error}'));
-          }
-          final users = snapshot.data ?? [];
-          if (users.isEmpty) {
-            return const Center(child: Text('Chưa có tài khoản'));
-          }
-          return ListView.builder(
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              final u = users[index];
-              return ListTile(
-                leading: Icon(
-                  u.isAdmin ? Icons.admin_panel_settings : Icons.person,
-                  color: u.isLocked ? Colors.red : null,
-                ),
-                title: Text(u.username),
-                subtitle: Text(
-                  '${u.email ?? ''}\n'
-                  'Role: ${u.role}${u.isLocked ? ' • Đang khóa' : ''}',
-                ),
-                isThreeLine: true,
-                // Dong Admin khong co nut khoa / buoc dang xuat
-                trailing: u.isAdmin
-                    ? null
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            tooltip: 'Buộc đăng xuất',
-                            icon: const Icon(Icons.logout),
-                            onPressed: () => _revoke(u),
-                          ),
-                          IconButton(
-                            tooltip: u.isLocked ? 'Mở khóa' : 'Khóa',
-                            icon: Icon(
-                                u.isLocked ? Icons.lock_open : Icons.lock),
-                            onPressed: () => _toggleLock(u),
-                          ),
-                        ],
-                      ),
-              );
-            },
-          );
-        },
+      body: RefreshIndicator(
+        onRefresh: _reload,
+        child: FutureBuilder<List<AppUser>>(
+          future: _futureUsers,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return RefreshMessage('${snapshot.error}');
+            }
+            final users = snapshot.data ?? [];
+            if (users.isEmpty) {
+              return const RefreshMessage('Chưa có tài khoản');
+            }
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                final u = users[index];
+                return ListTile(
+                  leading: Icon(
+                    u.isAdmin ? Icons.admin_panel_settings : Icons.person,
+                    color: u.isLocked ? Colors.red : null,
+                  ),
+                  title: Text(u.username),
+                  subtitle: Text(
+                    '${u.email ?? ''}\n'
+                    'Role: ${u.role}${u.isLocked ? ' • Đang khóa' : ''}',
+                  ),
+                  isThreeLine: true,
+                  // Dong Admin khong co nut khoa / buoc dang xuat
+                  trailing: u.isAdmin
+                      ? null
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              tooltip: 'Buộc đăng xuất',
+                              icon: const Icon(Icons.logout),
+                              onPressed: () => _revoke(u),
+                            ),
+                            IconButton(
+                              tooltip: u.isLocked ? 'Mở khóa' : 'Khóa',
+                              icon: Icon(
+                                  u.isLocked ? Icons.lock_open : Icons.lock),
+                              onPressed: () => _toggleLock(u),
+                            ),
+                          ],
+                        ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
