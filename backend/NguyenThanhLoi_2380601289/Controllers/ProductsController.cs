@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NguyenThanhLoi_2380601289.Data;
@@ -7,6 +8,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize] // GET: chi can dang nhap (User hoac Admin)
     public class ProductsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -37,6 +39,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
         // POST: api/Products
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
             _context.Products.Add(product);
@@ -46,6 +49,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
         // PUT: api/Products/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutProduct(int id, Product product)
         {
             if (id != product.Id)
@@ -71,6 +75,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             var product = await _context.Products.FindAsync(id);

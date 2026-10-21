@@ -13,7 +13,7 @@
 - [x] BT1. Đăng xuất
 - [x] BT2. Đăng nhập đúng giao diện theo role
 - [x] BT3. Mở lại app vào đúng trang theo role
-- [ ] BT4. Phân quyền API danh sách sản phẩm
+- [x] BT4. Phân quyền API danh sách sản phẩm
 - [ ] BT6+8. Category + Product.CategoryId nullable + xóa danh mục thì set null
 - [ ] BT7. Admin thêm/xóa/sửa danh mục
 - [ ] BIO. Đăng nhập nhanh bằng vân tay với biometric_storage
@@ -279,3 +279,7 @@ Người dùng tự kiểm tra (demo cho thầy):
 - BT3 (xong): `main.dart` `main()`: có token → `getValidToken()`; còn hạn thì `role = getRole(token)`, hết hạn thì `logout()`; không có token → role null.
   `MyApp` đổi tham số `isLoggedIn` → `String? role` (null → `LoginScreen`, "Admin" → `AdminScreen`, "User" → `MainScreen`). `test/widget_test.dart` sửa thành `MyApp(role: null)`.
   `AuthService` không sửa. Cho BT4: backend chưa gắn `[Authorize]` cho `ProductsController`, `ProductService` chưa gửi header `Authorization: Bearer`.
+- BT4 (xong): `ProductsController` gắn `[Authorize]` cả class (GET cần đăng nhập), POST/PUT/DELETE thêm `[Authorize(Roles = "Admin")]`. `Program.cs` đã đúng thứ tự, không sửa.
+  `services/product_service.dart`: class mới `ApiException(statusCode, message)`; `_headers()` gửi `Authorization: Bearer <token>` (lấy từ `AuthService().getToken()`); `getProducts()` ném `ApiException` 401/403/khác.
+  `MainScreen._fetch()`: 401 → `logout()` + `pushAndRemoveUntil` về `LoginScreen`; 403 → SnackBar "Không có quyền". `_reload()` nuốt lỗi (lỗi hiện qua FutureBuilder).
+  Cho BT6+8/BT7: API Category mới nhớ gắn Authorize tương tự; service mới dùng lại cách tạo header Bearer + `ApiException` như `ProductService`.

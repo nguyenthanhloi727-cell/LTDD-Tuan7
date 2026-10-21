@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../models/product.dart';
+import '../services/auth_service.dart';
 import '../services/product_service.dart';
 import '../widgets/logout_button.dart';
+import 'login_screen.dart';
 
 // Trang User: danh sach san pham.
 class MainScreen extends StatefulWidget {
@@ -19,14 +21,41 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    _futureProducts = _productService.getProducts();
+    _futureProducts = _fetch();
+  }
+
+  // Goi API; 401 -> dang xuat ve LoginScreen, 403 -> bao "Khong co quyen".
+  Future<List<Product>> _fetch() async {
+    try {
+      return await _productService.getProducts();
+    } on ApiException catch (e) {
+      if (!mounted) rethrow;
+      if (e.statusCode == 401) {
+        await AuthService().logout();
+        if (!mounted) rethrow;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+      } else if (e.statusCode == 403) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không có quyền')),
+        );
+      }
+      rethrow;
+    }
   }
 
   Future<void> _reload() async {
     setState(() {
-      _futureProducts = _productService.getProducts();
+      _futureProducts = _fetch();
     });
-    await _futureProducts;
+    try {
+      await _futureProducts;
+    } catch (_) {
+      // Loi da hien trong FutureBuilder.
+    }
   }
 
   @override
