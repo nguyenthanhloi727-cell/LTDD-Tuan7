@@ -22,6 +22,12 @@ Bài tuần 7 mở rộng project tuần 6 (danh sách sản phẩm):
 
 Thêm: **đăng nhập nhanh bằng vân tay** (`biometric_storage`) — đăng nhập bằng mật khẩu lần đầu rồi bật, lần sau bấm nút vân tay.
 
+Nâng cấp:
+
+| Mã | Nội dung | Vị trí chính |
+|----|----------|--------------|
+| UP1 | Chỉ 1 tài khoản Admin (tạo sẵn lúc chạy, đăng ký luôn là User); Admin khóa / mở khóa tài khoản | `Program.cs`, `AuthenticateController`, `UsersController`, `UserManagementScreen` |
+
 ## Yêu cầu môi trường
 
 - .NET 8 SDK (Visual Studio 2022)
@@ -34,7 +40,7 @@ Thêm: **đăng nhập nhanh bằng vân tay** (`biometric_storage`) — đăng 
 2. Connection string nằm trong `backend/NguyenThanhLoi_2380601289/appsettings.json`:
    - `DefaultConnection`: `.\SQLEXPRESS`
    - `LocalDbConnection`: `(localdb)\MSSQLLocalDB` (tự dùng nếu không kết nối được SQLEXPRESS sau 3 giây)
-3. Database tự tạo khi chạy (`Database.Migrate()` trong `Program.cs`) và tự tạo 2 role `Admin`, `User`.
+3. Database tự tạo khi chạy (`Database.Migrate()` trong `Program.cs`), tự tạo 2 role `Admin`, `User` và tài khoản Admin (mục `AdminAccount` trong `appsettings.json`) nếu chưa có Admin nào.
    Muốn tạo bằng tay thì chạy:
    ```bash
    dotnet ef database update --project backend/NguyenThanhLoi_2380601289
@@ -57,12 +63,10 @@ Quy trình test chi tiết từng bài: [TESTING.md](TESTING.md).
 
 ## Tài khoản test
 
-Database mới là trống, cần tạo 2 tài khoản qua Swagger `POST /api/Authenticate/register`:
+- **Admin** (tạo sẵn khi chạy backend lần đầu): `admin` / `Admin@123`. Hệ thống chỉ có 1 Admin, không có cách đăng ký hay nâng quyền lên Admin.
+- **User**: đăng ký trong app, hoặc Swagger `POST /api/Authenticate/register`:
+  `{ "username": "user", "email": "user@test.com", "password": "User@123", "initials": "US" }`
+  (gửi thêm `"role": "Admin"` cũng bị bỏ qua, tài khoản vẫn là `User`).
 
-| Role | Body mẫu |
-|------|----------|
-| Admin | `{ "username": "admin", "email": "admin@test.com", "password": "Admin@123", "initials": "AD", "role": "Admin" }` |
-| User  | `{ "username": "user", "email": "user@test.com", "password": "User@123", "initials": "US", "role": "User" }` |
-
-Tài khoản User cũng có thể đăng ký ngay trong app (app luôn đăng ký role `User`).
+DB cũ đã có Admin tạo trước đây qua Swagger thì backend không tạo thêm `admin`; dùng lại tài khoản Admin cũ.
 Mật khẩu theo luật mặc định của Identity: có chữ hoa, chữ thường, số và ký tự đặc biệt.

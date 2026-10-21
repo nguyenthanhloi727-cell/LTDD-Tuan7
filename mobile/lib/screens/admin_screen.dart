@@ -7,6 +7,7 @@ import '../services/product_service.dart';
 import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
 import 'category_screen.dart';
+import 'user_management_screen.dart';
 
 // Trang danh cho tai khoan co role Admin:
 // danh sach san pham, bam vao san pham de chon danh muc; nut quan ly danh muc.
@@ -119,6 +120,14 @@ class _AdminScreenState extends State<AdminScreen> {
             tooltip: 'Quản lý danh mục',
             icon: const Icon(Icons.category),
             onPressed: _openCategories,
+          ),
+          IconButton(
+            tooltip: 'Quản lý tài khoản',
+            icon: const Icon(Icons.people),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const UserManagementScreen()),
+            ),
           ),
           const BiometricOffButton(),
           const LogoutButton(),

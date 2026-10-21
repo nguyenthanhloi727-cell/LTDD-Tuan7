@@ -9,14 +9,12 @@ Làm lần lượt từ trên xuống. Mỗi mục ghi **Làm gì** và **Kết 
 
 ### Tạo tài khoản test (Swagger)
 
-`POST /api/Authenticate/register` → **Try it out**, gửi lần lượt 2 body:
+Tài khoản **Admin** có sẵn: `admin` / `Admin@123` (backend tự tạo lúc chạy nếu chưa có Admin). Chỉ cần tạo tài khoản User:
+
+`POST /api/Authenticate/register` → **Try it out**, gửi body:
 
 ```json
-{ "username": "admin", "email": "admin@test.com", "password": "Admin@123", "initials": "AD", "role": "Admin" }
-```
-
-```json
-{ "username": "user", "email": "user@test.com", "password": "User@123", "initials": "US", "role": "User" }
+{ "username": "user", "email": "user@test.com", "password": "User@123", "initials": "US" }
 ```
 
 Kết quả đúng: `200` `{ "message": "Đăng ký thành công" }`. Gửi lại lần 2 → `400` "Tên đăng nhập đã tồn tại".
@@ -121,6 +119,18 @@ Trên app: đang ở MainScreen mà token bị mất hiệu lực (401) → app 
 | 7.4 | Bấm nút vân tay → bấm hủy hộp quét | SnackBar "Đã hủy xác thực vân tay", vẫn ở màn Đăng nhập |
 | 7.5 | Đăng nhập lại → icon "Tắt đăng nhập vân tay" trên AppBar → **Tắt** | SnackBar "Đã tắt đăng nhập bằng vân tay"; đăng xuất ra thì không còn nút vân tay |
 | 7.6 | Làm lại 7.1–7.3 với `admin` | Quét vân tay vào **Trang Admin** |
+
+## 7b. Chỉ 1 Admin + khóa tài khoản (UP1)
+
+| # | Làm gì | Kết quả đúng |
+|---|--------|--------------|
+| 7b.1 | Swagger register `{ "username": "hacker", "email": "h@test.com", "password": "Hacker@123", "initials": "HK", "role": "Admin" }` → login `hacker` trên app | Vào **Danh sách sản phẩm** (vẫn là User) |
+| 7b.2 | Đăng nhập `admin` → icon "Quản lý tài khoản" | Thấy danh sách tài khoản; dòng `admin` không có nút khóa |
+| 7b.3 | Bấm khóa `hacker` → xác nhận | Dòng `hacker` hiện "Đang khóa" |
+| 7b.4 | Đăng xuất, đăng nhập `hacker` | Báo **"Tài khoản đã bị khóa"** |
+| 7b.5 | Đăng nhập `admin` → mở khóa `hacker` → đăng nhập lại `hacker` | Đăng nhập được |
+| 7b.6 | Swagger: token của `user` gọi `GET /api/Users` | `403` |
+| 7b.7 | Swagger: token `admin` gọi `POST /api/Users/{id của admin}/lock` | `400` "Không thể khóa tài khoản Admin" |
 
 ## 8. Kiểm tra code trước khi nộp
 
