@@ -25,6 +25,7 @@
 - [x] UP4. Kéo xuống để tải lại + dispose TextEditingController
 - [x] UP5. Đăng ký bắt buộc OTP qua SMS (smart_auth SMS User Consent tự điền mã)
 - [x] UP6. Nút "Gửi mã" tự gửi SMS giả lập vào máy ảo (backend gọi `adb emu sms send`)
+- [x] UP7. Admin xóa sản phẩm + tên hiển thị app "Smart Auth"
 
 ---
 
@@ -388,6 +389,23 @@ Người dùng tự kiểm tra:
 
 ---
 
+### UP7. Admin xóa sản phẩm + tên hiển thị app "Smart Auth"
+
+Người dùng yêu cầu đổi tên hiển thị (hộp "Allow ... to read the message" của smart_auth lấy tên này). Chỉ đổi tên hiển thị, **không** đổi package name / applicationId.
+
+1. `android/app/src/main/AndroidManifest.xml` `android:label="Smart Auth"`; iOS `Info.plist` `CFBundleDisplayName` = `Smart Auth`.
+2. `ProductService.deleteProduct(id)` gọi `DELETE api/Products/{id}` (backend đã có, chỉ Admin).
+3. `AdminScreen`: mỗi sản phẩm có nút sửa + nút xóa (giống `CategoryScreen`), xóa hỏi xác nhận → xóa → tải lại.
+4. `TESTING.md` mục 7g.
+
+Commit: `feat: admin xoa san pham + ten app Smart Auth` — add: `mobile/ TESTING.md PROGRESS.md`
+
+Người dùng tự kiểm tra:
+- [ ] Trang Admin: bấm thùng rác ở 1 sản phẩm → hỏi xác nhận → Xóa → sản phẩm biến mất; bấm Hủy thì không xóa
+- [ ] Tên app dưới icon và hộp "Allow ... to read the message" hiện **Smart Auth**
+
+---
+
 ## 3. Nhật ký bàn giao
 
 > Mỗi bước ghi 3–5 dòng ngay dưới đây, mới nhất ở dưới cùng. Phiên sau đọc mục này thay vì quét lại code.
@@ -470,3 +488,7 @@ Người dùng tự kiểm tra:
   `OtpService` inject `SmsSimulator`, `Send` gọi `_sms.SendInBackground` sau khi in log `[OTP]`. `Program.cs` `AddSingleton<SmsSimulator>()`; `appsettings.json` mục `SmsSimulator` (`Enabled: true`, `AdbPath: ""`).
   Mobile: `RegisterScreen._sendOtp` gọi `_waitForOtpSms()` TRƯỚC khi gọi API (User Consent chỉ bắt SMS đến sau lúc bắt đầu chờ).
   Đã test: API trả về ngay, máy chỉ có điện thoại thật → log "Khong thay may ao". Nhánh gửi SMS thật vào máy ảo chưa test trên máy này (không có emulator).
+- UP7 (xong): tên hiển thị app = `Smart Auth`: `AndroidManifest.xml` `android:label`, iOS `Info.plist` `CFBundleDisplayName` (package `com.nguyenthanhloi.nguyenthanhloi_2380601289`, `pubspec name`, `applicationId` giữ nguyên; `MaterialApp.title` trong `main.dart` vẫn là 'LTDD Tuần 7').
+  `ProductService.deleteProduct(id)`: `DELETE api/Products/{id}`, 204 ok, 401/403/404 → `ApiException` (404 "Sản phẩm không còn tồn tại").
+  `AdminScreen`: `trailing` = Row nút sửa (`_openForm(p)`) + nút xóa (`_deleteProduct(p)`: dialog xác nhận → xóa → SnackBar → `_reload()`; lỗi 404 cũng tải lại). Bấm dòng vẫn mở form sửa.
+  Đã test trên Xiaomi: Hủy không xóa, Xóa thì mất khỏi danh sách; `aapt` đọc APK ra `application-label:'Smart Auth'`. `TESTING.md` mục 7g.

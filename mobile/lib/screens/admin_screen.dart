@@ -122,6 +122,37 @@ class _AdminScreenState extends State<AdminScreen> {
     }
   }
 
+  // Xoa san pham: hoi xac nhan truoc, xoa xong tai lai danh sach.
+  Future<void> _deleteProduct(Product p) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xóa sản phẩm?'),
+        content: Text('Xóa "${p.name}"? Không thể hoàn tác.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Xóa'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try {
+      await _productService.deleteProduct(p.id);
+      _showMessage('Đã xóa "${p.name}"');
+      _reload();
+    } catch (e) {
+      _handleError(e);
+      // 404: san pham da bi xoa noi khac -> tai lai cho danh sach dung
+      if (e is ApiException && e.statusCode == 404 && mounted) _reload();
+    }
+  }
+
   void _showMessage(String text) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
@@ -202,7 +233,21 @@ class _AdminScreenState extends State<AdminScreen> {
                       StockText(p.quantity),
                     ],
                   ),
-                  trailing: const Icon(Icons.edit),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: 'Sửa',
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _openForm(p),
+                      ),
+                      IconButton(
+                        tooltip: 'Xóa',
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteProduct(p),
+                      ),
+                    ],
+                  ),
                   onTap: () => _openForm(p),
                 );
               },

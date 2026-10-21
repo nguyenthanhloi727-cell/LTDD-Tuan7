@@ -195,6 +195,15 @@ Backend tìm `adb.exe` theo `SmsSimulator:AdbPath` (appsettings.json) → `ANDRO
 | 7f.6 | Đăng ký tài khoản khác bằng SĐT đã dùng | Bấm Gửi mã → "Số điện thoại đã được sử dụng" |
 | 7f.7 | **Điện thoại thật** (log backend ghi "Khong thay may ao Android"): lấy mã trong log backend, gõ tay vào ô OTP (hoặc nhờ máy khác nhắn tin chứa mã tới số mình — người gửi không nằm trong danh bạ) | Đăng ký thành công |
 
+## 7g. Admin xóa sản phẩm + tên app "Smart Auth" (UP7)
+
+| # | Làm gì | Kết quả đúng |
+|---|--------|--------------|
+| 7g.1 | Đăng nhập `admin` → bấm 🗑 ở 1 sản phẩm → **Hủy** | Không xóa gì |
+| 7g.2 | Bấm 🗑 lại → **Xóa** | SnackBar "Đã xóa ..."; sản phẩm biến mất khỏi danh sách (đăng nhập `user` cũng không còn thấy) |
+| 7g.3 | Bấm ✏️ hoặc bấm vào dòng sản phẩm | Vẫn mở form sửa như cũ |
+| 7g.4 | Xem tên app dưới icon trên máy, và hộp "Allow ... to read the message" ở mục 7f | Hiện **Smart Auth** |
+
 ## 8. Kiểm tra code trước khi nộp
 
 ```bash
