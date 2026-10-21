@@ -106,6 +106,40 @@ namespace NguyenThanhLoi_2380601289.Controllers
             return NoContent();
         }
 
+        // POST: api/Products/upload-image  (form-data, key "file")
+        // UP10: luu anh vao wwwroot/uploads/products, tra ve duong dan de gan vao Product.ImageUrl.
+        // Backend phuc vu file tinh qua app.UseStaticFiles() (Program.cs).
+        [HttpPost("upload-image")]
+        [Authorize(Roles = "Admin")]
+        [RequestSizeLimit(MaxImageBytes + 1024 * 1024)]
+        public async Task<IActionResult> UploadImage(IFormFile file, [FromServices] IWebHostEnvironment env)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "Chưa chọn file ảnh" });
+            if (file.Length > MaxImageBytes)
+                return BadRequest(new { message = "Ảnh tối đa 5 MB" });
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!AllowedImageExtensions.Contains(ext))
+                return BadRequest(new { message = "Chỉ nhận ảnh .jpg, .jpeg, .png, .webp, .gif" });
+
+            // Ten file moi = Guid: khong trung, khong de nguoi dung dat ten file/duong dan
+            var webRoot = env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot");
+            var folder = Path.Combine(webRoot, "uploads", "products");
+            Directory.CreateDirectory(folder);
+            var fileName = $"{Guid.NewGuid():N}{ext}";
+
+            await using (var stream = System.IO.File.Create(Path.Combine(folder, fileName)))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok(new { url = $"/uploads/products/{fileName}" });
+        }
+
+        private const long MaxImageBytes = 5 * 1024 * 1024;
+        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]

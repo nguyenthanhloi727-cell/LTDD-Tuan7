@@ -92,6 +92,32 @@ class ProductService {
     }
   }
 
+  // UP10 - Admin: upload anh (multipart/form-data, key "file").
+  // Tra ve duong dan tren backend, vd "/uploads/products/abc.jpg" -> gan vao Product.imageUrl.
+  Future<String> uploadImage(String filePath) async {
+    final headers = await _headers();
+    final request = http.MultipartRequest('POST', Uri.parse(ConfigUrl.uploadProductImage))
+      // Chi gui Authorization; Content-Type multipart do http tu dat (kem boundary)
+      ..headers['Authorization'] = headers['Authorization']!
+      ..files.add(await http.MultipartFile.fromPath('file', filePath));
+    final response = await http.Response.fromStream(await request.send());
+
+    if (response.statusCode == 401) {
+      throw ApiException(401, 'Phiên đăng nhập hết hạn');
+    }
+    if (response.statusCode == 403) {
+      throw ApiException(403, 'Không có quyền');
+    }
+    if (response.statusCode == 400) {
+      throw ApiException(400, _readMessage(response.body, 'Ảnh không hợp lệ'));
+    }
+    if (response.statusCode != 200) {
+      throw ApiException(
+          response.statusCode, 'Lỗi upload ảnh: ${response.statusCode}');
+    }
+    return jsonDecode(response.body)['url'] as String;
+  }
+
   // Admin: DELETE san pham. 404 = da bi xoa truoc do (vd o may khac).
   Future<void> deleteProduct(int id) async {
     final response = await http.delete(

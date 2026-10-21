@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _loading = false;
+  bool _obscurePassword = true; // UP8: nut con mat hien/an mat khau
   bool _biometricSupported = false; // may co van tay
   bool _biometricEnabled = false; // da bat dang nhap van tay
 
@@ -171,8 +172,18 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextField(
               controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Mật khẩu'),
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
+                labelText: 'Mật khẩu',
+                suffixIcon: IconButton(
+                  tooltip: _obscurePassword ? 'Hiện mật khẩu' : 'Ẩn mật khẩu',
+                  icon: Icon(_obscurePassword
+                      ? Icons.visibility_off
+                      : Icons.visibility),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
+              ),
             ),
             const SizedBox(height: 24),
             SizedBox(

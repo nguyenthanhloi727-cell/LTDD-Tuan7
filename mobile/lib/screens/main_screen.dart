@@ -5,8 +5,10 @@ import '../services/product_service.dart';
 import '../services/session.dart';
 import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
+import '../widgets/product_image.dart';
 import '../widgets/refresh_message.dart';
 import '../widgets/stock_text.dart';
+import 'product_detail_screen.dart';
 
 // Trang User: danh sach san pham.
 class MainScreen extends StatefulWidget {
@@ -82,7 +84,7 @@ class _MainScreenState extends State<MainScreen> {
               itemBuilder: (context, index) {
                 final p = products[index];
                 return ListTile(
-                  leading: const Icon(Icons.shopping_bag),
+                  leading: ProductImage(p.imageUrl),
                   title: Text(p.name),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,6 +97,12 @@ class _MainScreenState extends State<MainScreen> {
                     ],
                   ),
                   trailing: Text('${p.price.toStringAsFixed(0)} đ'),
+                  // UP9: bam vao san pham -> xem chi tiet
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => ProductDetailScreen(product: p)),
+                  ),
                 );
               },
             );

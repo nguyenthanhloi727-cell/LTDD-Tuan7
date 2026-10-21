@@ -10,8 +10,10 @@ import '../widgets/biometric_off_button.dart';
 import '../widgets/logout_button.dart';
 import '../widgets/refresh_message.dart';
 import '../widgets/product_form_dialog.dart';
+import '../widgets/product_image.dart';
 import '../widgets/stock_text.dart';
 import 'category_screen.dart';
+import 'product_detail_screen.dart';
 import 'user_management_screen.dart';
 
 // Trang danh cho tai khoan co role Admin:
@@ -223,7 +225,7 @@ class _AdminScreenState extends State<AdminScreen> {
               itemBuilder: (context, index) {
                 final p = products[index];
                 return ListTile(
-                  leading: const Icon(Icons.shopping_bag),
+                  leading: ProductImage(p.imageUrl),
                   title: Text(p.name),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,6 +238,16 @@ class _AdminScreenState extends State<AdminScreen> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // UP9: xem chi tiet giong ben User
+                      IconButton(
+                        tooltip: 'Xem chi tiết',
+                        icon: const Icon(Icons.visibility),
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => ProductDetailScreen(product: p)),
+                        ),
+                      ),
                       IconButton(
                         tooltip: 'Sửa',
                         icon: const Icon(Icons.edit),

@@ -5,3 +5,6 @@
 *.suo
 .idea/
 *.iml
+
+# UP10: anh admin upload luc chay (khong commit)
+backend/NguyenThanhLoi_2380601289/wwwroot/uploads/

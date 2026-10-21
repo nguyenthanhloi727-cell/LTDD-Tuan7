@@ -204,6 +204,22 @@ Backend tìm `adb.exe` theo `SmsSimulator:AdbPath` (appsettings.json) → `ANDRO
 | 7g.3 | Bấm ✏️ hoặc bấm vào dòng sản phẩm | Vẫn mở form sửa như cũ |
 | 7g.4 | Xem tên app dưới icon trên máy, và hộp "Allow ... to read the message" ở mục 7f | Hiện **Smart Auth** |
 
+## 7h. Ảnh sản phẩm, chi tiết sản phẩm, upload ảnh, dữ liệu mẫu (UP8–UP10)
+
+DB chưa có sản phẩm nào → backend tự tạo 3 danh mục + 6 sản phẩm mẫu có ảnh (iPhone 15, Galaxy S24, MacBook Air M3, Dell XPS 13 hết hàng, Tai nghe, Chuột).
+
+| # | Làm gì | Kết quả đúng |
+|---|--------|--------------|
+| 7h.1 | Màn Đăng nhập / Đăng ký: bấm icon con mắt ở ô mật khẩu | Hiện chữ mật khẩu; bấm lại → ẩn |
+| 7h.2 | Swagger `POST /api/Authenticate/login` | Body có `"status": true`, `"message": "Đăng nhập thành công"`, `token`; sai mật khẩu → `401` `"status": false` |
+| 7h.3 | Đăng nhập `user` → Trang User | Sản phẩm mẫu có ảnh; sản phẩm không có ảnh hiện icon túi |
+| 7h.4 | Bấm 1 sản phẩm | Mở **Chi tiết sản phẩm**: ảnh lớn, tên, giá, tồn kho, danh mục, mô tả |
+| 7h.5 | Đăng nhập `admin` → bấm 👁 ở 1 sản phẩm | Mở cùng màn chi tiết như User |
+| 7h.6 | Admin → ✏️ sửa 1 sản phẩm → **Chọn ảnh** → chọn ảnh trong máy | Nút hiện "Đang tải lên...", xong thì ô Link ảnh có `/uploads/products/...` và ảnh xem trước đổi |
+| 7h.7 | Bấm **Lưu** | Danh sách và màn chi tiết hiện ảnh mới (User cũng thấy) |
+| 7h.8 | Ô Link ảnh dán link ngoài `https://...` hoặc xóa trống → Lưu | Hiện ảnh từ link / quay về icon túi |
+| 7h.9 | Swagger `upload-image` bằng token User | `403` |
+
 ## 8. Kiểm tra code trước khi nộp
 
 ```bash

@@ -149,6 +149,9 @@ using (var scope = app.Services.CreateScope())
             Console.WriteLine("Khong tao duoc tai khoan Admin: " +
                 string.Join("; ", result.Errors.Select(e => e.Description)));
     }
+
+    // UP10: DB chua co san pham nao thi them danh muc + san pham mau (co anh)
+    await SampleData.SeedAsync(scope.ServiceProvider.GetRequiredService<ApplicationDbContext>());
 }
 
 if (app.Environment.IsDevelopment())
@@ -156,6 +159,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// UP10: phuc vu file trong wwwroot (anh mau /images/samples, anh upload /uploads/products)
+app.UseStaticFiles();
 
 app.UseCors("AllowAll");
 app.UseAuthentication();
