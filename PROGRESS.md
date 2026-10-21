@@ -14,7 +14,7 @@
 - [x] BT2. Đăng nhập đúng giao diện theo role
 - [x] BT3. Mở lại app vào đúng trang theo role
 - [x] BT4. Phân quyền API danh sách sản phẩm
-- [ ] BT6+8. Category + Product.CategoryId nullable + xóa danh mục thì set null
+- [x] BT6+8. Category + Product.CategoryId nullable + xóa danh mục thì set null
 - [ ] BT7. Admin thêm/xóa/sửa danh mục
 - [ ] BIO. Đăng nhập nhanh bằng vân tay với biometric_storage
 - [ ] BT5. smart_auth (điểm cộng)
@@ -283,3 +283,8 @@ Người dùng tự kiểm tra (demo cho thầy):
   `services/product_service.dart`: class mới `ApiException(statusCode, message)`; `_headers()` gửi `Authorization: Bearer <token>` (lấy từ `AuthService().getToken()`); `getProducts()` ném `ApiException` 401/403/khác.
   `MainScreen._fetch()`: 401 → `logout()` + `pushAndRemoveUntil` về `LoginScreen`; 403 → SnackBar "Không có quyền". `_reload()` nuốt lỗi (lỗi hiện qua FutureBuilder).
   Cho BT6+8/BT7: API Category mới nhớ gắn Authorize tương tự; service mới dùng lại cách tạo header Bearer + `ApiException` như `ProductService`.
+- BT6+8 (xong): mới `Models/Category.cs` (Id, Name, Description?, `[JsonIgnore] Products`), `Models/ProductDto.cs` (thêm `CategoryId`, `CategoryName`). `Product` thêm `int? CategoryId` + `[JsonIgnore] Category?`.
+  `ApplicationDbContext`: `DbSet<Category> Categories`; `OnModelCreating` HasOne/WithMany/`OnDelete(DeleteBehavior.SetNull)`. Migration `AddCategory` (có `ReferentialAction.SetNull`) đã database update.
+  `ProductsController`: 2 GET trả `ProductDto` qua expression `ToDto` (LEFT JOIN lấy `Category.Name`); POST/PUT/DELETE vẫn nhận `Product` (gửi `categoryId` được).
+  Mobile: `Product` thêm `categoryId`, `categoryName` (nullable); `MainScreen` subtitle "Danh mục: ... / Chưa phân loại".
+  Cho BT7: chưa có `CategoriesController` và `CategoryService`; nhớ `[Authorize]` + Admin cho POST/PUT/DELETE, service dùng `_headers()` + `ApiException` như `ProductService`.
