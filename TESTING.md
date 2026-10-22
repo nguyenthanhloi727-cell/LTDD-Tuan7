@@ -265,6 +265,29 @@ DB chưa có sản phẩm nào → backend tự tạo 3 danh mục + 6 sản ph�
 | 7l.6 | Bấm một sản phẩm ở "Sản phẩm mới" hoặc "Sắp hết hàng" | Mở màn Chi tiết sản phẩm |
 | 7l.7 | Admin thêm sản phẩm mới → User kéo xuống tải lại Trang chủ | Sản phẩm mới hiện đầu "Sản phẩm mới"; tắt backend rồi kéo thì hiện lỗi, bật lại kéo tiếp là có dữ liệu |
 
+## 7m. Phân quyền Admin / Manager / Employee / User + Admin đổi role (UP15)
+
+| Role | Vào trang | Được làm |
+|---|---|---|
+| User | Trang chủ / Marketplace / Tài khoản | Xem hàng (khách) |
+| Employee | **Trang Nhân viên** | Chỉ xem sản phẩm, tồn kho, danh mục |
+| Manager | **Trang Quản lý** | Thêm / sửa / xóa sản phẩm, danh mục, upload ảnh; không vào Quản lý tài khoản |
+| Admin | Trang Admin | Như Manager + Quản lý tài khoản (khóa, buộc đăng xuất, đổi role) |
+
+| # | Thao tác | Kết quả mong đợi |
+|---|---|---|
+| 7m.1 | `admin` → Quản lý tài khoản | Dòng User có thêm nút **Đổi role**; dòng `admin` không có nút nào |
+| 7m.2 | Bấm Đổi role ở `hacker` | Hộp chọn Manager / Employee / User (không có Admin), role hiện tại được đánh dấu |
+| 7m.3 | Chọn **Employee** | SnackBar "Đã đổi ... thành Employee (phải đăng nhập lại)", dòng hiện "Role: Employee" |
+| 7m.4 | `hacker` đang đăng nhập (máy khác) kéo tải lại | Về màn Đăng nhập (token cũ bị thu hồi, như 7c.2) |
+| 7m.5 | Đăng nhập `hacker` (Employee) | **Trang Nhân viên**: chỉ có nút 👁; không có Thêm / Sửa / Xóa, không có Quản lý tài khoản; bấm dòng → Chi tiết; icon danh mục → màn "Danh mục" không có nút sửa / xóa / + |
+| 7m.6 | Admin đổi `hacker` thành **Manager** → đăng nhập `hacker` | **Trang Quản lý**: có Thêm / Sửa / Xóa, Quản lý danh mục; **không** có Quản lý tài khoản |
+| 7m.7 | Swagger token Employee: `POST /api/Products`, `DELETE /api/Categories/1` | `403` |
+| 7m.8 | Swagger token Manager: `POST /api/Products` | `201`; `GET /api/Users` → `403` |
+| 7m.9 | Swagger token Admin: `POST /api/Users/{id}/role` `{ "role": "Admin" }` / đổi role của `admin` | `400` "Role chỉ được là Manager, Employee hoặc User" / "Không thể đổi role tài khoản Admin" |
+
+Xong thì đổi `hacker` về **User** để mục 7b vẫn đúng. Mua hàng (giỏ hàng) chưa có, làm ở bước sau.
+
 ## 8. Kiểm tra code trước khi nộp
 
 ```bash

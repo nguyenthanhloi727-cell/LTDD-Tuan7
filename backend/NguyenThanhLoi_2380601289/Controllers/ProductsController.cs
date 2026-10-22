@@ -9,7 +9,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // GET: chi can dang nhap (User hoac Admin)
+    [Authorize] // GET: chi can dang nhap (moi role)
     public class ProductsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -63,7 +63,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
         // POST: api/Products
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.ManageProducts)]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
             if (!await CategoryExists(product.CategoryId))
@@ -78,7 +78,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
         // PUT: api/Products/5
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.ManageProducts)]
         public async Task<IActionResult> PutProduct(int id, Product product)
         {
             if (id != product.Id)
@@ -110,7 +110,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
         // UP10: luu anh vao wwwroot/uploads/products, tra ve duong dan de gan vao Product.ImageUrl.
         // Backend phuc vu file tinh qua app.UseStaticFiles() (Program.cs).
         [HttpPost("upload-image")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.ManageProducts)]
         [RequestSizeLimit(MaxImageBytes + 1024 * 1024)]
         public async Task<IActionResult> UploadImage(IFormFile file, [FromServices] IWebHostEnvironment env)
         {
@@ -142,7 +142,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.ManageProducts)]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             var product = await _context.Products.FindAsync(id);

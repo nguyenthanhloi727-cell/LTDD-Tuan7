@@ -28,7 +28,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  // null = chua dang nhap, con lai la "Admin" hoac "User"
+  // null = chua dang nhap, con lai la "Admin" / "Manager" / "Employee" / "User"
   final String? role;
 
   const MyApp({super.key, required this.role});
@@ -36,12 +36,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget home;
-    if (role == 'Admin') {
-      home = const AdminScreen();
-    } else if (role == 'User') {
-      home = const MainScreen();
-    } else {
+    if (role == null) {
       home = const LoginScreen();
+    } else if (AuthService.isStaff(role!)) {
+      home = AdminScreen(role: role!);
+    } else {
+      home = const MainScreen();
     }
 
     return MaterialApp(

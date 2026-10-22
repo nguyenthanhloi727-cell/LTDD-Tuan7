@@ -8,7 +8,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // GET: chi can dang nhap (User hoac Admin)
+    [Authorize] // GET: chi can dang nhap (moi role)
     public class CategoriesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -39,7 +39,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
         // POST: api/Categories
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.ManageProducts)]
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
             category.Id = 0; // de SQL Server tu sinh Id
@@ -50,7 +50,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
 
         // PUT: api/Categories/5
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.ManageProducts)]
         public async Task<IActionResult> PutCategory(int id, Category category)
         {
             if (id != category.Id)
@@ -73,7 +73,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
         // DELETE: api/Categories/5
         // Khong xoa san pham: FK cau hinh OnDelete(SetNull) nen CategoryId cua san pham thanh NULL.
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = AppRoles.ManageProducts)]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var category = await _context.Categories.FindAsync(id);

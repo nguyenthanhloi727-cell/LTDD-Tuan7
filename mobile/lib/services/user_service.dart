@@ -72,6 +72,16 @@ class UserService {
     _check(response, 'buộc đăng xuất');
   }
 
+  // UP15: Admin doi role (Manager / Employee / User). Doi xong token cu cua nguoi do bi 401.
+  Future<void> changeRole(String id, String role) async {
+    final response = await http.post(
+      Uri.parse('${ConfigUrl.users}/$id/role'),
+      headers: await _headers(),
+      body: jsonEncode({'role': role}),
+    );
+    _check(response, 'đổi role');
+  }
+
   // Tu thu hoi token cua minh (nut demo het han token).
   Future<void> revokeMe() async {
     final response = await http.post(

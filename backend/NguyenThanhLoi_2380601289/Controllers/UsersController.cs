@@ -6,9 +6,9 @@ using NguyenThanhLoi_2380601289.Models;
 
 namespace NguyenThanhLoi_2380601289.Controllers
 {
-    // Chi Admin duoc xem danh sach tai khoan, khoa / mo khoa, thu hoi token.
+    // Chi Admin duoc xem danh sach tai khoan, khoa / mo khoa, thu hoi token, doi role.
     // Rieng me/revoke: ai dang nhap cung goi duoc cho chinh minh.
-    // Khong co API nang ai len Admin.
+    // Khong co API nang ai len Admin (doi role chi trong Manager / Employee / User).
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -37,7 +37,7 @@ namespace NguyenThanhLoi_2380601289.Controllers
                     username = u.UserName,
                     email = u.Email,
                     phoneNumber = u.PhoneNumber,
-                    role = roles.Contains("Admin") ? "Admin" : "User",
+                    role = AppRoles.Highest(roles),
                     isLocked = await _userManager.IsLockedOutAsync(u)
                 });
             }
@@ -88,6 +88,31 @@ namespace NguyenThanhLoi_2380601289.Controllers
             return Ok(new { message = "Đã buộc đăng xuất" });
         }
 
+        // POST: api/Users/{id}/role  body { "role": "Manager" } — UP15: Admin doi role.
+        // Chi doi giua Manager / Employee / User; khong doi role cua Admin, khong nang ai len Admin.
+        // Doi xong doi SecurityStamp: token cu (role cu) bi 401, nguoi do dang nhap lai nhan role moi.
+        [HttpPost("{id}/role")]
+        [Authorize(Roles = AppRoles.Admin)]
+        public async Task<IActionResult> ChangeRole(string id, [FromBody] ChangeRoleModel model)
+        {
+            var role = AppRoles.Assignable.FirstOrDefault(
+                r => string.Equals(r, model.Role, StringComparison.OrdinalIgnoreCase));
+            if (role == null)
+                return BadRequest(new { message = "Role chỉ được là Manager, Employee hoặc User" });
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+                return NotFound(new { message = "Không tìm thấy tài khoản" });
+            if (await _userManager.IsInRoleAsync(user, AppRoles.Admin))
+                return BadRequest(new { message = "Không thể đổi role tài khoản Admin" });
+
+            var oldRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, oldRoles);
+            await _userManager.AddToRoleAsync(user, role);
+            await _userManager.UpdateSecurityStampAsync(user);
+            return Ok(new { message = $"Đã đổi role thành {role}", role });
+        }
+
         // POST: api/Users/me/revoke — tu thu hoi token cua chinh minh (nut demo het han token)
         [HttpPost("me/revoke")]
         public async Task<IActionResult> RevokeMe()
@@ -99,5 +124,10 @@ namespace NguyenThanhLoi_2380601289.Controllers
             await _userManager.UpdateSecurityStampAsync(user);
             return Ok(new { message = "Token hiện tại đã bị thu hồi" });
         }
+    }
+
+    public class ChangeRoleModel
+    {
+        public string Role { get; set; } = string.Empty;
     }
 }

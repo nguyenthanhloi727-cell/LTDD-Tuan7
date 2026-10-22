@@ -1,6 +1,6 @@
 # Hướng dẫn dùng API bằng Swagger
 
-Backend: ASP.NET Core 8 Web API, xác thực bằng JWT, 2 role `Admin` / `User`.
+Backend: ASP.NET Core 8 Web API, xác thực bằng JWT, 4 role `Admin` / `Manager` / `Employee` / `User` (UP15).
 
 ## 1. Mở Swagger
 
@@ -42,19 +42,20 @@ Tài khoản Admin có sẵn: `admin` / `Admin@123` (tạo tự động khi ch�
 | | `POST /api/Authenticate/login` | Ai cũng được | Đăng nhập, trả về JWT |
 | Products | `GET /api/Products` | Đã đăng nhập | Danh sách sản phẩm (kèm tên danh mục) |
 | | `GET /api/Products/{id}` | Đã đăng nhập | Xem 1 sản phẩm |
-| | `POST /api/Products` | Admin | Thêm sản phẩm |
-| | `PUT /api/Products/{id}` | Admin | Sửa sản phẩm |
-| | `DELETE /api/Products/{id}` | Admin | Xóa sản phẩm |
-| | `POST /api/Products/upload-image` | Admin | Upload ảnh sản phẩm, trả về đường dẫn ảnh |
+| | `POST /api/Products` | Admin, Manager | Thêm sản phẩm |
+| | `PUT /api/Products/{id}` | Admin, Manager | Sửa sản phẩm |
+| | `DELETE /api/Products/{id}` | Admin, Manager | Xóa sản phẩm |
+| | `POST /api/Products/upload-image` | Admin, Manager | Upload ảnh sản phẩm, trả về đường dẫn ảnh |
 | Categories | `GET /api/Categories` | Đã đăng nhập | Danh sách danh mục (sắp theo tên) |
 | | `GET /api/Categories/{id}` | Đã đăng nhập | Xem 1 danh mục |
-| | `POST /api/Categories` | Admin | Thêm danh mục |
-| | `PUT /api/Categories/{id}` | Admin | Sửa danh mục |
-| | `DELETE /api/Categories/{id}` | Admin | Xóa danh mục (sản phẩm thuộc danh mục → "Chưa phân loại") |
+| | `POST /api/Categories` | Admin, Manager | Thêm danh mục |
+| | `PUT /api/Categories/{id}` | Admin, Manager | Sửa danh mục |
+| | `DELETE /api/Categories/{id}` | Admin, Manager | Xóa danh mục (sản phẩm thuộc danh mục → "Chưa phân loại") |
 | Users | `GET /api/Users` | Admin | Danh sách tài khoản |
 | | `POST /api/Users/{id}/lock` | Admin | Khóa tài khoản (đá ra ngay) |
 | | `POST /api/Users/{id}/unlock` | Admin | Mở khóa |
 | | `POST /api/Users/{id}/revoke` | Admin | Buộc đăng xuất (token cũ hết dùng) |
+| | `POST /api/Users/{id}/role` | Admin | Đổi role (Manager / Employee / User) |
 | | `POST /api/Users/me/revoke` | Đã đăng nhập | Tự thu hồi token của chính mình |
 
 ### Ý nghĩa mã trả về
@@ -64,7 +65,7 @@ Tài khoản Admin có sẵn: `admin` / `Admin@123` (tạo tự động khi ch�
 | `200` / `201` / `204` | Thành công (`201` = đã tạo mới, `204` = thành công, không có body) |
 | `400` | Dữ liệu sai, xem `message` hoặc `errors` trong body |
 | `401` | Chưa Authorize, token hết hạn hoặc đã bị thu hồi → đăng nhập lại |
-| `403` | Đã đăng nhập nhưng không đủ quyền (User gọi API của Admin) |
+| `403` | Đã đăng nhập nhưng không đủ quyền (vd. User/Employee thêm sản phẩm, Manager gọi API Users) |
 | `404` | Không tìm thấy (sai `id`, hoặc chưa chạy bản backend mới nhất) |
 | `429` | Gửi OTP quá nhanh, đợi 60 giây |
 
@@ -104,7 +105,7 @@ Tài khoản Admin có sẵn: `admin` / `Admin@123` (tạo tự động khi ch�
 
 ## 5. Products — sản phẩm
 
-**Thêm** (Admin): `POST /api/Products`
+**Thêm** (Admin, Manager): `POST /api/Products`
 ```json
 {
   "name": "iPhone 15",
@@ -132,16 +133,16 @@ Tài khoản Admin có sẵn: `admin` / `Admin@123` (tạo tự động khi ch�
 - `imageUrl` dạng `/...` là file trên backend, mở bằng `http://localhost:5080` + đường dẫn (ví dụ `http://localhost:5080/images/samples/iphone-15.png`, không cần token). Dạng `https://...` là link ngoài. `null` = không có ảnh.
 - `categoryName: null` = "Chưa phân loại".
 
-**Sửa** (Admin): `PUT /api/Products/{id}` — ô `id` trên URL và `"id"` trong body **phải giống nhau**, gửi **đầy đủ** các trường:
+**Sửa** (Admin, Manager): `PUT /api/Products/{id}` — ô `id` trên URL và `"id"` trong body **phải giống nhau**, gửi **đầy đủ** các trường:
 ```json
 { "id": 1, "name": "iPhone 15 Pro", "price": 25000000, "description": "256GB",
   "imageUrl": null, "quantity": 5, "categoryId": 1 }
 ```
 - `204` = đã sửa. `id` lệch nhau → `400`. Không có sản phẩm → `404`.
 
-**Xóa** (Admin): `DELETE /api/Products/{id}` → `204`; không có → `404`.
+**Xóa** (Admin, Manager): `DELETE /api/Products/{id}` → `204`; không có → `404`.
 
-**Upload ảnh** (Admin): `POST /api/Products/upload-image`
+**Upload ảnh** (Admin, Manager): `POST /api/Products/upload-image`
 1. Try it out → ô `file` bấm **Choose File** → chọn ảnh `.jpg/.jpeg/.png/.webp/.gif` (tối đa 5 MB) → Execute.
 2. Kết quả `200`: `{ "url": "/uploads/products/3f2a...c1.png" }`
 3. Dùng `url` đó làm `imageUrl` khi `POST`/`PUT` sản phẩm. Xem ảnh trên trình duyệt: `http://localhost:5080/uploads/products/3f2a...c1.png`.
@@ -152,19 +153,19 @@ Tài khoản Admin có sẵn: `admin` / `Admin@123` (tạo tự động khi ch�
 
 ## 6. Categories — danh mục
 
-**Thêm** (Admin): `POST /api/Categories`
+**Thêm** (Admin, Manager): `POST /api/Categories`
 ```json
 { "name": "Điện thoại", "description": "Smartphone" }
 ```
 → `201`, body có `id` của danh mục mới.
 
-**Sửa** (Admin): `PUT /api/Categories/{id}` — `id` trên URL và trong body phải giống nhau:
+**Sửa** (Admin, Manager): `PUT /api/Categories/{id}` — `id` trên URL và trong body phải giống nhau:
 ```json
 { "id": 1, "name": "Điện thoại di động", "description": "Smartphone" }
 ```
 → `204`.
 
-**Xóa** (Admin): `DELETE /api/Categories/{id}` → `204`.
+**Xóa** (Admin, Manager): `DELETE /api/Categories/{id}` → `204`.
 Sản phẩm không bị xóa theo, chỉ đổi `categoryId` thành `null` (hiện "Chưa phân loại").
 
 ## 7. Users — quản lý tài khoản (Admin)
@@ -183,6 +184,7 @@ Copy `id` (chuỗi dài) để dùng cho các API bên dưới, dán vào ô `id
 | `POST /api/Users/{id}/lock` | `200` "Đã khóa tài khoản". Người đó đăng nhập → `401` "Tài khoản đã bị khóa"; token đang dùng → `401` ngay. Khóa Admin → `400` "Không thể khóa tài khoản Admin" |
 | `POST /api/Users/{id}/unlock` | `200` "Đã mở khóa tài khoản" |
 | `POST /api/Users/{id}/revoke` | `200` "Đã buộc đăng xuất": mọi token cũ của người đó → `401`, phải đăng nhập lại |
+| `POST /api/Users/{id}/role` body `{ "role": "Manager" }` | `200` "Đã đổi role thành Manager"; token cũ của người đó → `401`, đăng nhập lại nhận role mới. Role khác Manager/Employee/User → `400`; đổi role Admin → `400` "Không thể đổi role tài khoản Admin" |
 | `POST /api/Users/me/revoke` | `200` "Token hiện tại đã bị thu hồi": token đang dán trong Authorize cũng hết dùng |
 
 ## 8. Kịch bản thử phân quyền nhanh

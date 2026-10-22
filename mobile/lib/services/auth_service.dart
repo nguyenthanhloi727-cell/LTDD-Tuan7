@@ -83,14 +83,20 @@ class AuthService {
     return token;
   }
 
+  // UP15: 4 role, xep tu cao xuong thap.
+  static const List<String> roles = ['Admin', 'Manager', 'Employee', 'User'];
+
   // Lay role tu token (claim role co the la chuoi hoac mang).
-  // Co "Admin" thi tra "Admin", con lai tra "User".
+  // Co nhieu role thi lay role cao nhat; khong co role nao thi tra "User".
   String getRole(String token) {
     final decoded = JwtDecoder.decode(token);
     final role = decoded[roleClaim] ?? decoded['role'];
-    final roles = role is List ? role : [role];
-    return roles.contains('Admin') ? 'Admin' : 'User';
+    final tokenRoles = role is List ? role : [role];
+    return roles.firstWhere(tokenRoles.contains, orElse: () => 'User');
   }
+
+  // Admin / Manager / Employee vao trang quan ly (AdminScreen), User vao trang khach (MainScreen)
+  static bool isStaff(String role) => role != 'User';
 
   // UP12: lay ten dang nhap tu token (tab Tai khoan hien thi).
   String getUsername(String token) {

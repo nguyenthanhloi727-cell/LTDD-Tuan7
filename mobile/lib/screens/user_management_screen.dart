@@ -5,7 +5,7 @@ import '../services/session.dart';
 import '../services/user_service.dart';
 import '../widgets/refresh_message.dart';
 
-// Trang Admin: xem danh sach tai khoan, khoa / mo khoa tai khoan User.
+// Trang Admin: xem danh sach tai khoan, khoa / mo khoa, doi role (UP15).
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
 
@@ -121,6 +121,45 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
   }
 
+  // UP15: chon role moi trong dialog -> goi API. Khong co lua chon Admin (chi 1 Admin).
+  static const _roleNames = {
+    'Manager': 'Manager (quản lý hàng)',
+    'Employee': 'Employee (nhân viên, chỉ xem)',
+    'User': 'User (khách hàng)',
+  };
+
+  Future<void> _changeRole(AppUser u) async {
+    final role = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text('Đổi role "${u.username}"'),
+        children: [
+          for (final entry in _roleNames.entries)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, entry.key),
+              child: Row(
+                children: [
+                  Icon(entry.key == u.role
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(entry.value)),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+    if (role == null || role == u.role) return;
+    try {
+      await _service.changeRole(u.id, role);
+      _showMessage('Đã đổi "${u.username}" thành $role (phải đăng nhập lại)');
+      _reload();
+    } catch (e) {
+      _showMessage(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,12 +195,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     'Role: ${u.role}${u.isLocked ? ' • Đang khóa' : ''}',
                   ),
                   isThreeLine: true,
-                  // Dong Admin khong co nut khoa / buoc dang xuat
+                  // Dong Admin khong co nut doi role / khoa / buoc dang xuat
                   trailing: u.isAdmin
                       ? null
                       : Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            IconButton(
+                              tooltip: 'Đổi role',
+                              icon: const Icon(Icons.manage_accounts),
+                              onPressed: () => _changeRole(u),
+                            ),
                             IconButton(
                               tooltip: 'Buộc đăng xuất',
                               icon: const Icon(Icons.logout),

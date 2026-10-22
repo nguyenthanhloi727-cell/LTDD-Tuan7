@@ -6,8 +6,11 @@ import '../services/session.dart';
 import '../widgets/refresh_message.dart';
 
 // Trang Admin: quan ly danh muc (them, sua, xoa).
+// UP15: canEdit = false (Employee) -> chi xem, an nut them / sua / xoa.
 class CategoryScreen extends StatefulWidget {
-  const CategoryScreen({super.key});
+  final bool canEdit;
+
+  const CategoryScreen({super.key, this.canEdit = true});
 
   @override
   State<CategoryScreen> createState() => _CategoryScreenState();
@@ -119,11 +122,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Quản lý danh mục')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _add,
-        child: const Icon(Icons.add),
-      ),
+      appBar: AppBar(
+          title: Text(widget.canEdit ? 'Quản lý danh mục' : 'Danh mục')),
+      floatingActionButton: widget.canEdit
+          ? FloatingActionButton(
+              onPressed: _add,
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: RefreshIndicator(
         onRefresh: _reload,
         child: FutureBuilder<List<Category>>(
@@ -147,19 +153,21 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 return ListTile(
                   leading: const Icon(Icons.category),
                   title: Text(c.name),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => _edit(c),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => _delete(c),
-                      ),
-                    ],
-                  ),
+                  trailing: !widget.canEdit
+                      ? null
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () => _edit(c),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => _delete(c),
+                            ),
+                          ],
+                        ),
                 );
               },
             );

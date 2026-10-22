@@ -41,6 +41,7 @@ Nâng cấp:
 | UP12 | Trang User có thanh tab dưới **Trang chủ / Marketplace / Tài khoản** (đổi tab không tải lại); tab Tài khoản hiện tên đăng nhập + role, tắt vân tay, đăng xuất | `MainScreen` (`NavigationBar` + `IndexedStack`), `MarketplaceScreen`, `HomeScreen`, `AccountScreen`, `AuthService.getUsername` |
 | UP13 | Marketplace dạng **lưới 2 cột**, tìm theo tên (không dấu, không phân biệt hoa thường), chip lọc danh mục / Chưa phân loại, sắp xếp Mới nhất / Giá / Tên; hết hàng thì ảnh mờ | `MarketplaceScreen`, `widgets/product_card.dart` (`ProductCard`), `utils/format.dart` (`removeDiacritics`) |
 | UP14 | Trang chủ: lời chào theo tên, ô tìm kiếm, banner "Hàng mới về", hàng danh mục, "Sản phẩm mới" (6 sp mới nhất), "Sắp hết hàng" (còn 1–5); bấm vào thì sang Marketplace đã lọc / mở chi tiết | `HomeScreen`, `MainScreen.openMarketplace({query, categoryId, sort})` |
+| UP15 | 4 role: **User** (khách), **Employee** (Trang Nhân viên, chỉ xem hàng + tồn kho), **Manager** (Trang Quản lý: thêm/sửa/xóa hàng, danh mục), **Admin** (thêm Quản lý tài khoản + **đổi role** Manager/Employee/User) | `Models/AppRoles.cs`, `POST /api/Users/{id}/role`, `AdminScreen(role:)`, `CategoryScreen(canEdit:)` |
 
 Tài liệu API: [API.md](API.md). Kế hoạch + nhật ký từng bước: [PROGRESS.md](PROGRESS.md).
 

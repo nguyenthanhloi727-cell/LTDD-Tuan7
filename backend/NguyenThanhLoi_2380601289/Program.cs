@@ -118,13 +118,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Tu tao/cap nhat database theo migration + seed 2 role Admin va User neu chua co
+// Tu tao/cap nhat database theo migration + seed 4 role neu chua co
+// (UP15: Admin > Manager > Employee > User, xem Models/AppRoles.cs)
 using (var scope = app.Services.CreateScope())
 {
     scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
 
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    foreach (var role in new[] { "Admin", "User" })
+    foreach (var role in AppRoles.All)
     {
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));

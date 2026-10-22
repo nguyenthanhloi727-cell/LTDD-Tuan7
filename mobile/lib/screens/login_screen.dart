@@ -139,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
     await _goToHome();
   }
 
-  // Doc role trong token vua luu: Admin -> AdminScreen, con lai -> MainScreen
+  // Doc role trong token vua luu: Admin/Manager/Employee -> AdminScreen, User -> MainScreen
   Future<void> _goToHome() async {
     final token = await _authService.getToken();
     if (!mounted) return;
@@ -147,8 +147,9 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            role == 'Admin' ? const AdminScreen() : const MainScreen(),
+        builder: (_) => AuthService.isStaff(role)
+            ? AdminScreen(role: role)
+            : const MainScreen(),
       ),
     );
   }

@@ -17,10 +17,14 @@ import 'category_screen.dart';
 import 'product_detail_screen.dart';
 import 'user_management_screen.dart';
 
-// Trang danh cho tai khoan co role Admin:
-// danh sach san pham (them / sua day du), nut quan ly danh muc.
+// Trang quan ly cho Admin / Manager / Employee (UP15):
+// - Admin: them / sua / xoa san pham + danh muc, quan ly tai khoan (khoa, doi role)
+// - Manager: them / sua / xoa san pham + danh muc, khong vao quan ly tai khoan
+// - Employee: chi xem san pham, ton kho, danh muc
 class AdminScreen extends StatefulWidget {
-  const AdminScreen({super.key});
+  final String role;
+
+  const AdminScreen({super.key, this.role = 'Admin'});
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
@@ -30,6 +34,15 @@ class _AdminScreenState extends State<AdminScreen> {
   final _productService = ProductService();
   final _categoryService = CategoryService();
   late Future<List<Product>> _futureProducts;
+
+  bool get _isAdmin => widget.role == 'Admin';
+  bool get _canEdit => widget.role == 'Admin' || widget.role == 'Manager';
+
+  String get _title => switch (widget.role) {
+        'Admin' => 'Trang Admin',
+        'Manager' => 'Trang Quản lý',
+        _ => 'Trang Nhân viên',
+      };
 
   @override
   void initState() {
@@ -90,7 +103,7 @@ class _AdminScreenState extends State<AdminScreen> {
   Future<void> _openCategories() async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const CategoryScreen()),
+      MaterialPageRoute(builder: (_) => CategoryScreen(canEdit: _canEdit)),
     );
     _reload(); // danh muc co the da bi sua/xoa
   }
@@ -175,21 +188,22 @@ class _AdminScreenState extends State<AdminScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Trang Admin'),
+        title: Text(_title),
         actions: [
           IconButton(
-            tooltip: 'Quản lý danh mục',
+            tooltip: _canEdit ? 'Quản lý danh mục' : 'Danh mục',
             icon: const Icon(Icons.category),
             onPressed: _openCategories,
           ),
-          IconButton(
-            tooltip: 'Quản lý tài khoản',
-            icon: const Icon(Icons.people),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const UserManagementScreen()),
+          if (_isAdmin)
+            IconButton(
+              tooltip: 'Quản lý tài khoản',
+              icon: const Icon(Icons.people),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UserManagementScreen()),
+              ),
             ),
-          ),
           IconButton(
             tooltip: 'Làm hết hạn token (demo)',
             icon: const Icon(Icons.timer_off),
@@ -199,11 +213,13 @@ class _AdminScreenState extends State<AdminScreen> {
           const LogoutButton(),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openForm(),
-        icon: const Icon(Icons.add),
-        label: const Text('Thêm sản phẩm'),
-      ),
+      floatingActionButton: _canEdit
+          ? FloatingActionButton.extended(
+              onPressed: () => _openForm(),
+              icon: const Icon(Icons.add),
+              label: const Text('Thêm sản phẩm'),
+            )
+          : null,
       body: RefreshIndicator(
         onRefresh: _reload,
         child: FutureBuilder<List<Product>>(
@@ -249,19 +265,28 @@ class _AdminScreenState extends State<AdminScreen> {
                               builder: (_) => ProductDetailScreen(product: p)),
                         ),
                       ),
-                      IconButton(
-                        tooltip: 'Sửa',
-                        icon: const Icon(Icons.edit),
-                        onPressed: () => _openForm(p),
-                      ),
-                      IconButton(
-                        tooltip: 'Xóa',
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => _deleteProduct(p),
-                      ),
+                      if (_canEdit) ...[
+                        IconButton(
+                          tooltip: 'Sửa',
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => _openForm(p),
+                        ),
+                        IconButton(
+                          tooltip: 'Xóa',
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => _deleteProduct(p),
+                        ),
+                      ],
                     ],
                   ),
-                  onTap: () => _openForm(p),
+                  // Employee bam vao dong -> xem chi tiet thay vi mo form sua
+                  onTap: _canEdit
+                      ? () => _openForm(p)
+                      : () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => ProductDetailScreen(product: p)),
+                          ),
                 );
               },
             );

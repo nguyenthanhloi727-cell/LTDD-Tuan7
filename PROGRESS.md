@@ -33,6 +33,7 @@
 - [x] UP12. Trang User có thanh tab dưới (Trang chủ / Marketplace / Tài khoản) + tab Tài khoản
 - [x] UP13. Marketplace: lưới sản phẩm + tìm kiếm + lọc danh mục + sắp xếp
 - [x] UP14. Home Screen: lời chào, ô tìm kiếm, danh mục, sản phẩm mới, còn hàng ít
+- [x] UP15. Thêm role Manager / Employee + Admin đổi role tài khoản
 
 ---
 
@@ -640,3 +641,7 @@ Người dùng tự kiểm tra:
   `MainScreen.openMarketplace` và `MarketplaceScreenState.applyFilter` thêm tham số tùy chọn `ProductSort? sort` (null = giữ kiểu sắp xếp hiện tại; gọi không tham số vẫn bỏ lọc).
   Đã test trên Xiaomi (testuser): lời chào, danh mục → lọc, tìm `iphone`, banner về "Mới nhất", chi tiết, admin thêm sp số lượng 3 → kéo tải lại thấy ở cả 2 mục (sp test đã xóa). Chưa test tắt backend. TESTING 7l, README dòng UP14.
   Lưu ý: màn Login sau UP11 đổi toạ độ (ô user y≈1148, mật khẩu y≈1345, nút y≈1558 khi chưa mở bàn phím); bong bóng Zalo có thể che nút AppBar bên phải.
+- UP15 (xong, việc thêm ngoài kế hoạch): mới `Models/AppRoles.cs` (`Admin`, `Manager`, `Employee`, `User`, `ManageProducts = "Admin,Manager"`, `All`, `Assignable` = 3 role không có Admin, `Highest(roles)`). `Program.cs` seed `AppRoles.All`; API thêm/sửa/xóa Products, Categories, upload-image đổi sang `[Authorize(Roles = AppRoles.ManageProducts)]`.
+  `UsersController`: `GET` trả `role = AppRoles.Highest(roles)`; mới `POST /api/Users/{id}/role` (Admin, body `ChangeRoleModel { Role }`): role ngoài `Assignable` → 400, đổi Admin → 400, xóa role cũ + gán role mới + `UpdateSecurityStampAsync` (token cũ 401).
+  Mobile: `AuthService.roles` + `getRole` trả role cao nhất, `AuthService.isStaff(role)` (khác User → `AdminScreen(role:)`, dùng ở `main.dart` + `login_screen.dart`). `AdminScreen`: `_isAdmin`, `_canEdit`, `_title` (Trang Admin / Trang Quản lý / Trang Nhân viên); Employee ẩn FAB + Sửa/Xóa, bấm dòng mở chi tiết. `CategoryScreen(canEdit:)`. `UserService.changeRole`, nút `Icons.manage_accounts` + `SimpleDialog` ở `UserManagementScreen`.
+  Đã test API + trên Xiaomi (hacker Employee → Manager, đã trả về User). TESTING 7m, API.md, README dòng UP15. Chưa có mua hàng / giỏ hàng — nếu làm thì là bước mới.
